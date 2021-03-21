@@ -1,0 +1,140 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(readxl)
+library(leaps)
+library(car)
+library(faraway)
+pcancerdf <- read_xlsx("../823data/pcancer.xlsx")
+```
+
+
+**change score and seminal to factors**  
+**the levels keep the default names for now...**
+```{r}
+
+pcancerdf$score <- factor(pcancerdf$score)
+pcancerdf$seminal <- factor(pcancerdf$seminal)
+```
+
+## Summary of the data
+
+```{r}
+summary(pcancerdf)
+```
+
+Questions: Hyperplasia and Capsular both contain many rows with a value of 0 - Should these be considered missing values or
+are is this valid?  The summary below indicates almost half the dataset.  If the rows were excluded, over half the dataset
+would need to be removed
+
+```{r}
+print("Hyperplasia zeros")
+nrow(pcancerdf[pcancerdf$hyperplasia == 0,])
+print("Capsular zeros")
+nrow(pcancerdf[pcancerdf$capsular == 0,])
+print("Capsular or hyperplasia (union) zeros")
+nrow(pcancerdf[pcancerdf$capsular == 0 | pcancerdf$hyperplasia == 0,])
+```
+
+
+## Regression model for each possible predictor
+
+```{r}
+lm.cancerv <- lm(data = pcancerdf, psa ~ cancerv)
+lm.weight <- lm(data = pcancerdf, psa ~ weight)
+lm.age <- lm(data = pcancerdf, psa ~ age)
+lm.hyperplasia <- lm(data = pcancerdf, psa ~ hyperplasia)
+lm.seminal <- lm(data = pcancerdf, psa ~ seminal)
+lm.capsular <- lm(data = pcancerdf, psa ~ capsular)
+lm.score <- lm(data = pcancerdf, psa ~ score)
+```
+
+
+```{r}
+round(summary(lm.cancerv)$coefficients,4)
+print(paste("R^2=",round(summary(lm.cancerv)$r.squared,4)))
+round(summary(lm.weight)$coefficients,4)
+print(paste("R^2=",round(summary(lm.weight)$r.squared,6)))
+round(summary(lm.age)$coefficients,4)
+print(paste("R^2=",round(summary(lm.age)$r.squared,6)))
+round(summary(lm.hyperplasia)$coefficients,4)
+print(paste("R^2=",round(summary(lm.hyperplasia)$r.squared,6)))
+round(summary(lm.seminal)$coefficients,4)
+print(paste("R^2=",round(summary(lm.seminal)$r.squared,4)))
+round(summary(lm.capsular)$coefficients,4)
+print(paste("R^2=",round(summary(lm.capsular)$r.squared,4)))
+round(summary(lm.score)$coefficients,4)
+print(paste("R^2=",round(summary(lm.score)$r.squared,4)))
+```
+
+## Plot the top candidates
+
+**psa VS cancerv**
+```{r}
+plot(y = pcancerdf$psa, x = pcancerdf$cancerv)
+abline(lm.cancerv)
+plot(lm.cancerv)
+```
+
+**psa vs capsular**
+```{r}
+plot(y = pcancerdf$psa, x = pcancerdf$capsular)
+abline(lm.capsular)
+plot(lm.capsular)
+```
+
+**psa vs seminal**
+```{r}
+plot(lm.seminal)
+```
+
+## Multiple regression
+
+**psa vs capsular + cancerv**
+```{r}
+lm.mult.2pred <- lm(data = pcancerdf, psa ~ cancerv + capsular)
+summary(lm.mult.2pred)
+```
+**two predictors**
+**psa vs cancerv + capsular + seminal**
+```{r}
+lm.mult.3seminal <- lm(data = pcancerdf, psa ~ cancerv + capsular + seminal)
+summary(lm.mult.3seminal)
+```
+**3 predictors**
+**psa vs cancerv + capsular + score**
+```{r}
+lm.mult.3score <- lm(data = pcancerdf, psa ~ cancerv + capsular + score)
+summary(lm.mult.3score)
+```
+**4 predictors**
+**psa vs cancerv + capsular + seminal + score**
+```{r}
+lm.mult.4pred <- lm(data = pcancerdf, psa ~ cancerv + capsular + score + seminal)
+summary(lm.mult.4pred)
+```
+
+##Remove two potentially influential samples
+```{r}
+pcancerdf.sub <- pcancerdf[c(1:94,96),]
+lm.capsular.sub <- lm(data = pcancerdf.sub, psa ~ capsular)
+plot(y = pcancerdf.sub$psa, x = pcancerdf.sub$capsular)
+abline(lm.capsular.sub)
+abline(lm.capsular)
+plot(lm.capsular.sub)
+summary(lm.capsular.sub)
+summary(lm.capsular)
+```
+
+```{r}
+lm.mult.sub.2pred <- lm(data = pcancerdf.sub, psa ~ cancerv + capsular)
+summary(lm.mult.2pred)
+summary(lm.mult.sub.2pred)
+```
+
+lm.mult.sub.3seminal <- lm(data = pcancerdf.sub, psa ~ cancerv + capsular + seminal)
+summary(lm.mult.3seminal)
+summary(lm.mult.sub.3seminal)
