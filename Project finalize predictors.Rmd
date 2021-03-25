@@ -9,8 +9,8 @@ library(leaps)
 library(car)
 library(faraway)
 pcancerdf <- read_xlsx("../823data/pcancer.xlsx")
-pcancerdf <- pcancerdf[c(1:94,96),]
-pcancerdf.sub <- pcancerdf[pcancerdf$capsular > 0,]
+
+pcancerdf.sub <- pcancerdf[c(1:93,95,96),] #discard 94,97
 ```
 
 
@@ -21,197 +21,269 @@ pcancerdf.sub <- pcancerdf[pcancerdf$capsular > 0,]
 pcancerdf$score <- factor(pcancerdf$score)
 pcancerdf$seminal <- factor(pcancerdf$seminal)
 
+pcancerdf.sub$score <- factor(pcancerdf.sub$score)
+pcancerdf.sub$seminal <- factor(pcancerdf.sub$seminal)
+
 ```
 
 ## Summary of the data
 
 ```{r}
+print("full data set")
 summary(pcancerdf)
+print("potentially influential points removed")
+summary(pcancerdf.sub)
 ```
 
-Questions: Hyperplasia and Capsular both contain many rows with a value of 0 - Should these be considered missing values or
-are is this valid?  The summary below indicates almost half the dataset.  If the rows were excluded, over half the dataset
-would need to be removed
-
+**capsular contains may observations with a value of zero**
 ```{r}
-print("Hyperplasia zeros")
-nrow(pcancerdf[pcancerdf$hyperplasia == 0,])
+
 print("Capsular zeros")
 nrow(pcancerdf[pcancerdf$capsular == 0,])
-print("Capsular or hyperplasia (union) zeros")
-nrow(pcancerdf[pcancerdf$capsular == 0 | pcancerdf$hyperplasia == 0,])
+
 ```
 
 
-## Regression model for each possible predictor
+## Regression model for covariate options
 
 ```{r}
-lm.cancerv <- lm(data = pcancerdf, psa ~ cancerv)
-lm.weight <- lm(data = pcancerdf, psa ~ weight)
-lm.age <- lm(data = pcancerdf, psa ~ age)
-lm.hyperplasia <- lm(data = pcancerdf, psa ~ hyperplasia)
+#----------- cancerv ---------------------
+lm.cancerv <- lm(data = pcancerdf, psa ~ cancerv) #full data set
+lm.cancerv.log <- lm(data=pcancerdf, psa ~ log(cancerv)) # log of full data set
+lm.cancerv.sub <- lm(data=pcancerdf.sub, psa ~ cancerv) # subset (50 observations)
+lm.cancerv.sub.log <- lm(data=pcancerdf.sub, psa ~ log(cancerv)) #log of subset
+#------------weight, age, hyperplasia-------
+#lm.weight <- lm(data = pcancerdf, psa ~ weight)
+#lm.age <- lm(data = pcancerdf, psa ~ age)
+#lm.hyperplasia <- lm(data = pcancerdf, psa ~ hyperplasia)
+#------------seminal------------------------
 lm.seminal <- lm(data = pcancerdf, psa ~ seminal)
-lm.capsular <- lm(data = pcancerdf, psa ~ capsular)
+#-----------capsular------------------------
+lm.capsular <- lm(data = pcancerdf, psa ~ capsular) #full data set
+lm.capsular.sub <- lm(data=pcancerdf.sub, psa ~ capsular) # subset (50 observations)
+#----------score----------------------------
 lm.score <- lm(data = pcancerdf, psa ~ score)
 
-#look at a log transformation for capsular and cancerv 
-#lm.capsular.log <- lm(data=pcancerdf, psa ~ log(capsular))
-lm.cancerv.log <- lm(data=pcancerdf, psa ~ log(cancerv))
+```
 
-#look at a subset of capsular and cancerv
-lm.capsular.sub <- lm(data=pcancerdf.sub, psa ~ capsular)
-lm.cancerv.sub <- lm(data=pcancerdf.sub, psa ~ cancerv)
+## Explore Leverage and Influential observations
 
-lm.capsular.sub.log <- lm(data=pcancerdf.sub, psa ~ log(capsular))
-lm.cancerv.sub.log <- lm(data=pcancerdf.sub, psa ~ log(cancerv))
+### Cancer v leverage and influence
+```{r}
+index <- c(1:nrow(pcancerdf))
+
+par(mfrow = c(1,2))
+halfnorm(lm.influence(lm.cancerv)$hat, labs = index)
+halfnorm(cooks.distance(lm.cancerv),3,labs=index)
+```
+```{r}
+plot(influence(lm.cancerv)$coefficients[,2])
+identify(1:97, influence(lm.cancerv)$coef[,2],index)
+```
+
+```{r}
+
+```
+
+
+### Capsular v leverage and influence
+```{r}
+index <- c(1:nrow(pcancerdf))
+
+par(mfrow = c(1,2))
+halfnorm(lm.influence(lm.capsular)$hat, labs = index)
+halfnorm(cooks.distance(lm.capsular),3,labs=index)
 ```
 
 
 ```{r}
-round(summary(lm.cancerv)$coefficients,4)
+head(pcancerdf[order(pcancerdf$cancerv,decreasing =  TRUE),])
+
+lm.cancerv.a <- lm(data = pcancerdf.sub, psa ~ cancerv)
+summary(lm.cancerv.sub)
+
+summary(lm.cancerv)
+```
+
+```{r}
+
+head(pcancerdf[order(pcancerdf$capsular,decreasing =  TRUE),])
+
+lm.capsular.a <- lm(data = pcancerdf.sub, psa ~ cancerv)
+summary(lm.capsular.sub)
+
+summary(lm.capsular)
+```
+
+
+## Regression coefficients for covariate options
+```{r}
 print(paste("---cancerv R^2=",round(summary(lm.cancerv)$r.squared,4)))
+round(summary(lm.cancerv)$coefficients,4)
 
-round(summary(lm.cancerv.log)$coefficients,4)
 print(paste("---log(cancerv) R^2=",round(summary(lm.cancerv.log)$r.squared,4)))
+round(summary(lm.cancerv.log)$coefficients,4)
 
+print(paste("---subset cancerv R^2=",round(summary(lm.cancerv.sub)$r.squared,4)))
 round(summary(lm.cancerv.sub)$coefficients,4)
-print(paste("---cancerv subset R^2=",round(summary(lm.cancerv.sub)$r.squared,4)))
 
-round(summary(lm.weight)$coefficients,4)
-print(paste("weight R^2=",round(summary(lm.weight)$r.squared,6)))
+print(paste("---subset log(cancerv) R^2=",round(summary(lm.cancerv.sub)$r.squared,4)))
+round(summary(lm.cancerv.sub)$coefficients,4)
 
-round(summary(lm.age)$coefficients,4)
-print(paste("age R^2=",round(summary(lm.age)$r.squared,6)))
+#round(summary(lm.weight)$coefficients,4)
+#print(paste("weight R^2=",round(summary(lm.weight)$r.squared,6)))
 
-round(summary(lm.hyperplasia)$coefficients,4)
-print(paste("hyperplasia R^2=",round(summary(lm.hyperplasia)$r.squared,6)))
+#round(summary(lm.age)$coefficients,4)
+#print(paste("age R^2=",round(summary(lm.age)$r.squared,6)))
 
-round(summary(lm.seminal)$coefficients,4)
+#round(summary(lm.hyperplasia)$coefficients,4)
+#print(paste("hyperplasia R^2=",round(summary(lm.hyperplasia)$r.squared,6)))
+
 print(paste("---seminal R^2=",round(summary(lm.seminal)$r.squared,4)))
+round(summary(lm.seminal)$coefficients,4)
 
-round(summary(lm.capsular)$coefficients,4)
 print(paste("---capsular R^2=",round(summary(lm.capsular)$r.squared,4)))
+round(summary(lm.capsular)$coefficients,4)
 
-#round(summary(lm.capsular.log)$coefficients,4)
-#print(paste("---log(capsular) R^2=",round(summary(lm.capsular.log)$r.squared,4)))
-
+print(paste("---subset capsular R^2=",round(summary(lm.capsular.sub)$r.squared,4)))
 round(summary(lm.capsular.sub)$coefficients,4)
-print(paste("---capsular subset R^2=",round(summary(lm.capsular.sub)$r.squared,4)))
 
-round(summary(lm.capsular.sub.log)$coefficients,4)
-print(paste("---capsular log of subset R^2=",round(summary(lm.capsular.sub.log)$r.squared,4)))
-
-round(summary(lm.score)$coefficients,4)
 print(paste("score R^2=",round(summary(lm.score)$r.squared,4)))
+round(summary(lm.score)$coefficients,4)
+
 
 
 ```
 
-## Distribution
+## Distributions
 
-## capsular
+## capsular distributions
 
 ```{r}
 par(mfrow = c(2,2))
-hist(pcancerdf$capsular)
-hist(pcancerdf.sub$capsular)
-hist(log(pcancerdf$capsular))
-hist(log(pcancerdf.sub$capsular))
+hist(pcancerdf$capsular, main = "capsular - full dataset")
+hist(pcancerdf.sub$capsular, main = "capsular - subset")
 ```
 
 
-## cancerv
+## cancerv distributions
 
 ```{r}
 par(mfrow = c(2,2))
-hist(pcancerdf$cancerv)
-hist(pcancerdf.sub$cancerv)
-hist(log(pcancerdf$cancerv))
-hist(log(pcancerdf.sub$cancerv))
+hist(pcancerdf$cancerv, main = "cancerv - full dataset")
+hist(pcancerdf.sub$cancerv, main= "cancerv - subset")
+hist(log(pcancerdf$cancerv), main = "log of cancerv")
+hist(log(pcancerdf.sub$cancerv), main = "log of cancerv subset")
 ```
 
 ## Residuals
 
-### Capsular residuals
+### Test Capsular residuals
 
 ```{r}
-par(mfrow = c(1,2))
+par(mfrow = c(2,2))
 plot(fitted(lm.capsular), residuals(lm.capsular), main = "Capsular residuals")
 abline(h = 0)
-plot(fitted(lm.capsular.sub.log), residuals(lm.capsular.sub.log), main = "log(capsular) residuals")
+plot(fitted(lm.capsular.sub), residuals(lm.capsular.sub), main = "capsular residuals - subset")
 abline(h = 0)
 ```
 
 ```{r}
+print("***full data set")
 ncvTest(lm.capsular)
-ncvTest(lm.capsular.sub.log)
-print("small p-value - reject constant variance")
+print("***data subset")
+ncvTest(lm.capsular.sub)
+print("***log of data subset")
 ```
 
 ```{r}
-par(mfrow = c(1,2))
+par(mfrow = c(2,2))
 qqnorm(residuals(lm.capsular), main="capsular")
 qqline(residuals(lm.capsular))
 
-qqnorm(residuals(lm.capsular.sub.log), main="log(capsular)")
-qqline(residuals(lm.capsular.sub.log))
+qqnorm(residuals(lm.capsular), main="subset of capsular")
+qqline(residuals(lm.capsular))
 ```
+
+
 ```{r}
+print("***full data set")
 shapiro.test(residuals(lm.capsular))
-shapiro.test(residuals(lm.capsular.sub.log))
+print("*** data set subset")
+shapiro.test(residuals(lm.capsular.sub))
 ```
 
 
-### cancerv residuals
+### test cancerv residuals
 
 ```{r}
-par(mfrow = c(1,2))
+par(mfrow = c(2,2))
 plot(fitted(lm.cancerv), residuals(lm.cancerv), main = "cancerv residuals")
 abline(h = 0)
+plot(fitted(lm.cancerv.sub), residuals(lm.cancerv.sub), main = "cancerv residuals - data subset")
+abline(h = 0)
 plot(fitted(lm.cancerv.log), residuals(lm.cancerv.log), main = "log(cancerv) residuals")
+abline(h = 0)
+plot(fitted(lm.cancerv.sub.log), residuals(lm.cancerv.sub.log), main = "log(cancerv) residuals - data subset")
 abline(h = 0)
 ```
 
 ```{r}
 ncvTest(lm.cancerv)
+ncvTest(lm.cancerv.sub)
 ncvTest(lm.cancerv.log)
+ncvTest(lm.cancerv.sub.log)
 print("small p-value - reject constant variance")
 ```
 
 ```{r}
-par(mfrow = c(1,2))
+par(mfrow = c(2,2))
 qqnorm(residuals(lm.cancerv), main="cancerv")
 qqline(residuals(lm.cancerv))
 
+qqnorm(residuals(lm.cancerv.sub), main="cancerv - subset")
+qqline(residuals(lm.cancerv.sub))
+
 qqnorm(residuals(lm.cancerv.log), main="log(cancerv)")
 qqline(residuals(lm.cancerv.log))
+
+qqnorm(residuals(lm.cancerv.sub.log), main="log(cancerv) - subset")
+qqline(residuals(lm.cancerv.sub.log))
 ```
 
 ```{r}
 shapiro.test(residuals(lm.cancerv))
+shapiro.test(residuals(lm.cancerv.sub))
+shapiro.test(residuals(lm.cancerv.log))
 shapiro.test(residuals(lm.cancerv.sub.log))
 ```
 
-## Plot the top candidates
+## Plot the top covariate candidates
 
 **psa VS cancerv**
 ```{r}
-par(mfrow = c(1,2))
+par(mfrow = c(2,2))
 plot(y = pcancerdf$psa, x = pcancerdf$cancerv, main="cancerv")
 abline(lm.cancerv)
 plot(y = pcancerdf$psa, x = log(pcancerdf$cancerv), main="log(cancerv)")
 abline(lm.cancerv.log)
+plot(y = pcancerdf.sub$psa, x = pcancerdf.sub$cancerv, main="cancerv - subset")
+abline(lm.cancerv.sub)
+plot(y = pcancerdf.sub$psa, x = log(pcancerdf.sub$cancerv), main="log(cancerv) - subset")
+abline(lm.cancerv.sub.log)
 par(mfrow = c(2,2))
 plot(lm.cancerv)
 ```
 
 **psa vs capsular**
 ```{r}
-par(mfrow = c(1,2))
+par(mfrow = c(2,2))
+
 plot(y = pcancerdf$psa, x = pcancerdf$capsular, main="capsular")
 abline(lm.capsular)
-plot(y = pcancerdf.sub$psa, x = log(pcancerdf.sub$capsular), main="subset of log(capsular)")
-abline(lm.capsular.sub.log)
+plot(y = pcancerdf.sub$psa, x = pcancerdf.sub$capsular, main="capsular - subset")
+abline(lm.capsular.sub)
+
 par(mfrow = c(2,2))
 plot(lm.capsular)
 ```
@@ -223,91 +295,115 @@ plot(pcancerdf$psa ~ pcancerdf$seminal)
 
 ## Multiple regression
 
+### Compare subset metrics
+
+#### Subset metrics without transformation
+```{r}
+model.regsubsets.a <- regsubsets(psa ~ cancerv + capsular + seminal, data = pcancerdf)
+model.regsubsets.summ.a <- summary(model.regsubsets.a)
+
+regsubsets.df <- data.frame(model.regsubsets.summ.a$which, model.regsubsets.summ.a$adjr2,model.regsubsets.summ.a$cp,model.regsubsets.summ.a$bic)
+colnames(regsubsets.df) <- c("Intercept","cancerv","capsular","seminal","adj r2","cp","bic")
+regsubsets.df
+```
+
+#### Subset metrics with influential points removed
+```{r}
+model.regsubsets.sub <- regsubsets(psa ~ cancerv + capsular + seminal, data = pcancerdf.sub)
+model.regsubsets.summ.sub <- summary(model.regsubsets.sub)
+
+regsubsets.df <- data.frame(model.regsubsets.summ.sub$which,
+                            model.regsubsets.summ.sub$adjr2,
+                            model.regsubsets.summ.sub$cp,
+                            model.regsubsets.summ.sub$bic)
+colnames(regsubsets.df) <- c("Intercept","cancerv","capsular","seminal","adj r2","cp","bic")
+regsubsets.df
+```
+
+#### subset metrics WITH log(cancerv) transformation
+```{r}
+model.regsubsets.b <- regsubsets(psa ~ log(cancerv) + capsular + seminal, data = pcancerdf)
+model.regsubsets.summ.b <- summary(model.regsubsets.b)
+
+regsubsets.df <- data.frame(model.regsubsets.summ.b$which, model.regsubsets.summ.b$adjr2,model.regsubsets.summ.b$cp,model.regsubsets.summ.b$bic)
+colnames(regsubsets.df) <- c("Intercept","cancerv","capsular","seminal","adj r2","cp","bic")
+regsubsets.df
+```
+
+### Two covariates models and model summaries
 **psa vs cancerv + seminal**
 ```{r}
-lm.mult.2pred <- lm(data = pcancerdf, psa ~ cancerv + seminal)
-summary(lm.mult.2pred)
+lm.mult.2cov.a <- lm(data = pcancerdf, psa ~ cancerv + seminal)
+summary(lm.mult.2cov.a)
 ```
 
 **psa vs log(cancerv) + seminal**
 ```{r}
-lm.mult.2pred <- lm(data = pcancerdf, psa ~ log(cancerv) + seminal)
-summary(lm.mult.2pred)
+lm.mult.2cov.b <- lm(data = pcancerdf, psa ~ log(cancerv) + seminal)
+summary(lm.mult.2cov.b)
 ```
 
-**3 predictors**
+**Without influential observations -  psa vs cancerv + seminal**
+```{r}
+lm.mult.2cov.c <- lm(data = pcancerdf.sub, psa ~ cancerv + seminal)
+summary(lm.mult.2cov.c)
+```
+
+**Without influential observations -  psa vs log(cancerv) + seminal**
+```{r}
+lm.mult.2cov.d <- lm(data = pcancerdf.sub, psa ~ log(cancerv) + seminal)
+summary(lm.mult.2cov.d)
+```
+
+**psa vs capsular + seminal**
+```{r}
+lm.mult.2cov.e <- lm(data = pcancerdf, psa ~ capsular + seminal)
+summary(lm.mult.2cov.e)
+```
+
+### Two covariates test of residuals
+
+```{r}
+shapiro.test(residuals(lm.mult.2cov.a))
+shapiro.test(residuals(lm.mult.2cov.b))
+shapiro.test(residuals(lm.mult.2cov.c))
+shapiro.test(residuals(lm.mult.2cov.d))
+shapiro.test(residuals(lm.mult.2cov.e))
+```
+
+```{r}
+ncvTest(lm.mult.2cov.a)
+ncvTest(lm.mult.2cov.b)
+ncvTest(lm.mult.2cov.c)
+ncvTest(lm.mult.2cov.d)
+ncvTest(lm.mult.2cov.e)
+```
+
+
+### three covariates models and model summaries
 **psa vs cancerv + capsular + seminal**
 ```{r}
-lm.mult.3seminal <- lm(data = pcancerdf, psa ~ cancerv + capsular + seminal)
-summary(lm.mult.3seminal)
+lm.mult.3cov.a <- lm(data = pcancerdf, psa ~ cancerv + capsular + seminal)
+summary(lm.mult.3cov.a)
 ```
 
-**3 predictors - log of cancerv, capsular, seminal**
+**3 log(cancerv), capsular, seminal**
 ```{r}
-lm.mult.3.log.seminal <- lm(data = pcancerdf, psa ~ log(cancerv) + capsular + seminal)
-summary(lm.mult.3.log.seminal)
+lm.mult.3cov.b <- lm(data = pcancerdf, psa ~ log(cancerv) + capsular + seminal)
+summary(lm.mult.3cov.b)
 ```
+### Two covariates test of residuals
 
-**3 predictors**
-**psa vs cancerv + capsular + score**
+#### Shapiro-wilks test
 ```{r}
-lm.mult.3score <- lm(data = pcancerdf, psa ~ cancerv + capsular + score)
-summary(lm.mult.3score)
+shapiro.test(residuals(lm.mult.3cov.a))
+shapiro.test(residuals(lm.mult.3cov.b))
 ```
-**4 predictors**
-**psa vs cancerv + capsular + seminal + score**
+
+#### Non-constant variance
 ```{r}
-lm.mult.4pred <- lm(data = pcancerdf, psa ~ cancerv + capsular + score + seminal)
-summary(lm.mult.4pred)
+ncvTest(lm.mult.3cov.a)
+ncvTest(lm.mult.3cov.b)
 ```
 
-##Remove two potentially influential samples
-```{r}
-pcancerdf.sub <- pcancerdf[c(1:94,96),]
-lm.capsular.sub <- lm(data = pcancerdf.sub, psa ~ capsular)
-plot(y = pcancerdf.sub$psa, x = pcancerdf.sub$capsular)
-abline(lm.capsular.sub)
-abline(lm.capsular)
-plot(lm.capsular.sub)
-summary(lm.capsular.sub)
-summary(lm.capsular)
-```
-
-```{r}
-lm.mult.sub.2pred <- lm(data = pcancerdf.sub, psa ~ cancerv + capsular)
-summary(lm.mult.2pred)
-summary(lm.mult.sub.2pred)
-```
-
-
-```{r}
-lm.mult.sub.3seminal <- lm(data = pcancerdf.sub, psa ~ cancerv + capsular + seminal)
-print("All samples included")
-summary(lm.mult.3seminal)
-print("Samples 95 and 97 excluded")
-summary(lm.mult.sub.3seminal)
-```
-
-```{r}
-lm.mult.sub.3score <- lm(data = pcancerdf.sub, psa ~ cancerv + capsular + score)
-summary(lm.mult.3score)
-summary(lm.mult.sub.3score)
-```
-
-
-```{r}
-lm.mult.sub.4pred <- lm(data = pcancerdf.sub, psa ~ cancerv + capsular + seminal + score)
-summary(lm.mult.4pred)
-summary(lm.mult.sub.4pred)
-```
-
-```{r}
-pcancerdf.sub <- pcancerdf[c(1:94,96),]
-model.regsubsets <- regsubsets(psa ~ cancerv + capsular + seminal, data = pcancerdf.sub)
-model.regsubsets.summ <- summary(model.regsubsets)
-
-regsubsets.df <- data.frame(model.regsubsets.summ$which, model.regsubsets.summ$adjr2,model.regsubsets.summ$cp,model.regsubsets.summ$bic)
-colnames(regsubsets.df) <- c("Intercept","cancerv","capsular","seminal","adj r2","cp","bic")
-regsubsets.df
-```
 
