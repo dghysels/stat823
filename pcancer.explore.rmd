@@ -1,6 +1,9 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 
 
@@ -108,14 +111,15 @@ pcancerdf[pcancerdf$hyperplasia == 0,]
 creating new columns with 0's removed and a new data frame with the highest weights removed 
 ```{r}
 pcancerdf$hyperplasia.na <- sapply(pcancerdf$hyperplasia,function(x){if (x == 0){return (NA)} else {return (x)}})
-pcancerdf$capsular.na <- sapply(pcancerdf$capsular,function(x){if (x == 0){return (NA)} else {return (x)}})
+#pcancerdf$capsular.na <- sapply(pcancerdf$capsular,function(x){if (x == 0){return (NA)} else {return (x)}})
 pcancerdf.100 <- pcancerdf[pcancerdf$weight < 100,]
+pcancerdf.capsular.0 <- pcancerdf[pcancerdf$capsular > 0,]
 ```
 
 
 Check the coefficients for cancerv and capsular with capsular 0's replaced with na
 ```{r}
-lm.psa.1.1 <- lm(data = pcancerdf, formula = psa ~ cancerv  + capsular.na)
+lm.psa.1.1 <- lm(data = pcancerdf.capsular.0, formula = psa ~ cancerv  + capsular)
 print("coefficients for cancerv and capsular - zeros replaced")
 round(summary(lm.psa.1.1)$coefficient,5)
 print("coefficients for cancerv and capsular - raw data")
