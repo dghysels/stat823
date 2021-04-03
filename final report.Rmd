@@ -1,0 +1,151 @@
+---
+biblio-style: jabes
+bibliography: lazbibreg.bib
+documentclass: report
+fontsize: 12pt
+geometry: margin=1in
+header-includes: \usepackage{mdwlist} \usepackage[compact]{titlesec} \usepackage{titling}
+  \usepackage[font=small,labelfont=bf,tableposition=top]{caption} \usepackage{float}
+  \floatstyle{plaintop} \restylefloat{table} \usepackage{lastpage} \usepackage{hyperref}
+  \usepackage{colortbl} \usepackage{array} \hypersetup{backref,colorlinks=true} \usepackage{framed,color}
+  \definecolor{shadecolor}{rgb}{0.95, 0.92, 0.88} \usepackage{graphicx} \usepackage{booktabs}
+  \usepackage{fancyhdr} \usepackage[none]{hyphenat} \raggedright \usepackage{amsmath,
+  amsthm, amssymb, bm} \usepackage{marginnote} \usepackage{subfig} \def\mygraphcaption{Here
+  are my graphs.} \newlength{\mygraphwidth}\setlength{\mygraphwidth}{0.9\textwidth}
+  \usepackage{listings}
+output:
+  pdf_document:
+    citation_package: natbib
+    fig_caption: yes
+    highlight: tango
+  html_document:
+    df_print: paged
+subparagraph: yes
+---
+  \lstset{
+	basicstyle=\small\ttfamily,
+	columns=flexible,
+	breaklines=true}
+	
+  \pagestyle{fancy}
+  \fancyhead[L]{\textbf{abc, efg, hij}}
+  \fancyhead[C]{}
+  \fancyhead[R]{\textbf{STAT 823 Project}}
+  \fancyfoot[L]{}
+  \fancyfoot[C]{}
+  \fancyfoot[R]{Page -\thepage- of \pageref{LastPage}}
+  \fancypagestyle{plain}{\pagestyle{fancy}}
+  \renewcommand{\headrulewidth}{2pt}
+  \renewcommand{\footrulewidth}{2pt}
+ 
+ \hypersetup{
+	colorlinks   = true,
+	citecolor    = blue,
+	linkcolor    = black,
+	urlcolor     = blue
+  }
+  
+  \begin{titlepage}
+   \begin{center}
+       \vspace*{2cm}
+        
+       \vspace{0.5cm}
+ 
+       \textbf{\textit{\LARGE Studying factors associated with prostate-specific antigen (PSA) levels in prostate cancer patients }}
+ 
+       \vspace{0.5cm}
+      
+       \textbf{\Large STAT 823: Spring Class Project, 2021} 
+       
+        \vspace{0.5cm}
+        
+         \textbf{\large Don Ghysels, Melanie Valdez, Madhumithra Subramanian Karthikes}
+        
+       \vfill
+ 
+       \vspace{0.7cm}
+ 
+       \includegraphics[width=0.4\textwidth]{figures/ku}
+ 
+       \large Department of Biostatistics and Data Science \\
+       University of Kansas, USA \\
+       `r format(Sys.time(), '%B %e, %Y')`
+ 
+   \end{center}
+\end{titlepage}
+
+```{r setup, include=FALSE}
+# load packages
+library(knitr)
+library(formatR)
+library(stargazer)
+library(xtable)
+library(readxl)
+library(ggplot2)
+library(ggcorrplot)
+knitr::opts_chunk$set(echo = TRUE)
+options(digits = 5, width = 60, xtable.comment = FALSE)
+opts_chunk$set(tidy.opts = list(width.cutoff=60), tidy=TRUE)
+out_type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
+```
+
+ \setlength{\headheight}{45pt}
+ 
+\thispagestyle{empty}
+\newpage
+\pagenumbering{roman}
+\setcounter{page}{1}
+\pagestyle{plain}
+\tableofcontents
+\cleardoublepage
+\phantomsection
+\listoftables
+\phantomsection
+\listoffigures
+\newpage
+\pagenumbering{arabic}
+
+\section{Abstract}
+Put your abstract here
+
+\newpage
+
+\section{Introduction}
+--------------  
+Put all your introduction about the study topic here and cite some references. 
+
+For example,  The textbook ``\textbf{Design and Analysis of Experiments}'' by \citet{voss} is required. 
+
+Additional materials that you may wish to consult includ
+\citet{casella}, 
+\citet{kuehl}, 
+\citet{shalabh}.
+
+\subsectionsection{Data Sources}
+
+
+\subsectionsection{Model Assumptions}
+
+
+\subsectionsection{Data Sources}
+
+\section{Analysis of Covariates}
+
+```{r echo=FALSE}
+dataraw <- read_xlsx("../823data/pcancer.xlsx")
+
+data2 <- data.frame(dataraw)
+data2$seminal <- factor(dataraw$seminal)
+levels(data2$seminal) <- c("absence", "presence")
+data2$score <- factor(dataraw$score)
+levels(data2$score) <- c("6", "7", "8")
+attach(data2)
+```
+\subsection{analysis of continuous Covariates}
+```{r echo=FALSE}
+summary(data2)
+corr <- round(cor(data2[,c(3,4,5,6)]),4)
+ggcorrplot(corr, hc.order = TRUE, type = "lower",
+   lab = TRUE)
+```
+
