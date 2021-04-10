@@ -1,0 +1,152 @@
+---
+title: "project regression analysis notebook"
+author: "don ghysels"
+date: "4/10/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(readxl)
+library(leaps)
+library(car)
+library(faraway)
+library(knitr)
+pcancerdf <- read_xlsx("../823data/pcancer.xlsx")
+
+```
+
+pcancerdf contains all observations from the excel and pcancerdf.sub omits values that may be influential
+
+
+Convert Score and Seminal to factors. The level names for seminal invasion are set to TRUE and FALSE
+```{r}
+
+pcancerdf$score <- factor(pcancerdf$score)
+pcancerdf$seminal <- factor(pcancerdf$seminal)
+
+```
+
+Summarize the full data set and the subset
+```{r}
+print("full data set")
+summary(pcancerdf)
+```
+
+
+```{r}
+shapiro.test(pcancerdf$cancerv)
+shapiro.test(pcancerdf$weight)
+shapiro.test(pcancerdf$age)
+shapiro.test(pcancerdf$capsular)
+```
+
+
+## Regression model for covariate options
+```{r}
+#----------- cancer volume ---------------------
+lm.cancerv <- lm(data = pcancerdf, psa ~ cancerv) #full data set
+lm.cancerv.log <- lm(data = pcancerdf, log(psa) ~ log(cancerv))
+
+#------------weight, age, hyperplasia-------
+lm.weight <- lm(data = pcancerdf, psa ~ weight)
+lm.age <- lm(data = pcancerdf, psa ~ age)
+lm.weight.log <- lm(data = pcancerdf, log(psa) ~ log(weight))
+lm.age.log <- lm(data = pcancerdf, log(psa) ~ log(age))
+lm.hyperplasia <- lm(data = pcancerdf, psa ~ hyperplasia)
+
+#-----------capsular penetration------------------------
+lm.capsular <- lm(data = pcancerdf, psa ~ capsular) #full data set
+```
+
+
+
+```{r}
+summary(lm.cancerv)
+summary(lm.cancerv.log)
+```
+
+```{r}
+plot(x = pcancerdf$cancerv, y = pcancerdf$psa)
+abline(lm.cancerv)
+plot(x = log(pcancerdf$cancerv), y = log(pcancerdf$psa))
+abline(lm.cancerv.log)
+```
+
+```{r}
+summary(lm.weight)
+summary(lm.weight.log)
+```
+
+```{r}
+plot(x = pcancerdf$weight, y = pcancerdf$psa)
+abline(lm.weight)
+plot(x = log(pcancerdf$weight), y = log(pcancerdf$psa))
+abline(lm.weight.log)
+```
+
+```{r}
+summary(lm.age)
+summary(lm.age.log)
+```
+
+```{r}
+plot(x = pcancerdf$age, y = pcancerdf$psa)
+abline(lm.age)
+plot(x = log(pcancerdf$age), y = log(pcancerdf$psa))
+abline(lm.age.log)
+```
+
+```{r}
+summary(lm.capsular)
+```
+```{r}
+plot(x = pcancerdf$capsular, y = pcancerdf$psa)
+abline(lm.capsular)
+```
+
+
+```{r}
+summary(lm.hyperplasia)
+```
+
+```{r}
+plot(x = pcancerdf$hyperplasia, y = pcancerdf$psa)
+abline(lm.hyperplasia)
+```
+
+
+```{r}
+require(psych)
+library(psych)
+pcancerdf2 <- data.frame(pcancerdf)
+pcancerdf2$weight <- log(pcancerdf2$weight)
+pcancerdf2$psa <- log(pcancerdf2$psa)
+pcancerdf2$cancerv <- log(pcancerdf2$cancerv)
+pcancerdf2$age <- log(pcancerdf2$age)
+
+pairs.panels(pcancerdf2[c(2:6,8)])
+```
+
+```{r}
+summary(lm(data= pcancerdf2, psa~ weight + cancerv + seminal + (score=="8")))
+```
+
+```{r echo=TRUE}
+b <- regsubsets(psa ~ cancerv+seminal+weight+score+seminal, data = pcancerdf2)
+rs <- summary(b)
+kable(with(rs, cbind(which, rss, adjr2, cp, bic)), digits = 4)
+```
+```{r echo=TRUE}
+b <- regsubsets(psa ~ cancerv+seminal+weight+score+seminal, data = pcancerdf)
+rs <- summary(b)
+kable(with(rs, cbind(which, rss, adjr2, cp, bic)), digits = 4)
+```

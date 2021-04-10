@@ -118,7 +118,7 @@ Put all your introduction about the study topic here and cite some references. F
 
 \subsection{Primary Analysis Objectives}
 
-Determine whether compound XYZ reduces human leukocyte antigen (HLA) alloreactivity as measured by calculated panel reactive antibodies (cPRA) at week 16 compared to baseline (week 0) measures.
+Determine the association between \textit{ Serum Prostate-specific antigen level (mg/ml) \textbf{(PSA)}} and other clinical measurements in men with advanced prostate cancer
 
 \subsection{Secondary Analysis Objectives}
 
@@ -130,11 +130,8 @@ Patients experiencing end-stage renal disease (ESRD) often require a kidney tran
 \subsection{Data Sources}
 The dataset was obtained from one of the published datasets by \citet{kutner} [Here are the book's datasets](http://users.stat.ufl.edu/~rrandles/sta4210/Rclassnotes/data/textdatasets/index.html). Describe more about the data set, its variables and why you selected it.
 
-This is how you include R code within RMarkdown:
-````
-```{r, message=FALSE}`r ''`
-```
-````
+The data available for inclusion in the covariates include 5 continuous variables and 2 categorical variables. The 5 continuous variables included \textit{Estimate of prostate cancer volume (cc) \textbf(VOL)}, \textit{Prostate weight(gm) \textbf{(WT)}}, \textit{Age of patient (years) \textbf(AGE)}, \textit{Amount of benign prostatic hyperplasia ($cm^{2}$) \textbf{HYP}}, \textbf{Degree of capsular penetration(cm) \textbf{CAP}}.  The 2 categorical variables include \textit{Seminal Vesical Invasion \textbf{SEM}}, \textit{Cleason Score \textbf{SCORE}}
+
 
 \subsection{Statistical Analysis}
 
@@ -168,6 +165,7 @@ data2$seminal <- factor(dataraw$seminal)
 levels(data2$seminal) <- c("absence", "presence")
 data2$score <- factor(dataraw$score)
 levels(data2$score) <- c("6", "7", "8")
+
 attach(data2)
 ```
 \section{Results}
@@ -187,31 +185,46 @@ knitr::kable(summ(data2[2:9]),caption = "Summary of statistics")
 
 ```{r correlation, echo=FALSE, include=TRUE, message=FALSE, warning=TRUE, fig.cap="Correlation of available continuous covariates", fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 library(psych)
-pairs.panels(data2[c(2:6,8)])
-##corr <- round(cor(data2[,c(2:6)]),4)
-##ggcorrplot(corr, hc.order = TRUE, type = "lower",lab = TRUE)
+library(GGally)
+#pairs.panels(data2[c(2:6,8)])
+
+ggpairs(data2[c(2:6,8)],ggplot2::aes())
 ```
 
 Correlation coefficients in Figure \ref{fig:correlation} indicate the best relationships are between psa and capsular and between psa and cancer volume 
 
-The correlation between psa and weight and psa and age are considered tool low to consider these variables these variables as potential covariates. 
+The correlation between weight, hyperplasia and age were considered to weak for further exploration. 
 
-```{r distribution1, echo=FALSE, include=TRUE, fig.cap="Distribution of continuous variables",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+```{r dist.cov.box, echo=FALSE, include=TRUE, fig.cap="Distribution of continuous variables",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 p1 <- ggplot(data2, aes(y=cancerv,x=1)) + 
-  geom_boxplot() + geom_jitter(position=position_jitter(0.05))
-p2 <- ggplot(data2, aes(y=capsular,x=1)) + 
-  geom_boxplot()+ geom_jitter(position=position_jitter(0.05))
-p3 <- ggplot(data2, aes(y=hyperplasia,x=1)) + 
-  geom_boxplot()+ geom_jitter(position=position_jitter(0.05))
+  geom_boxplot() + 
+  geom_jitter(position=position_jitter(0.05))
+p2 <- ggplot(data2, aes(y=log(cancerv),x=1), title="Cancer Volume") + 
+  geom_boxplot() + 
+  geom_jitter(position=position_jitter(0.05))
+p3 <- ggplot(data2, aes(y=capsular,x=1), title="Cancer Volume") + 
+  geom_boxplot()+ 
+  geom_jitter(position=position_jitter(0.05))
+p3 <- ggplot(data2, aes(y=capsular,x=1), title="Cancer Volume") + 
+  geom_boxplot()+ 
+  geom_jitter(position=position_jitter(0.05))
+p3 <- ggplot(data2, aes(y=capsular,x=1), title="Cancer Volume") + 
+  geom_boxplot()+ 
+  geom_jitter(position=position_jitter(0.05))
 grid.arrange(ncol = 2, p1,p2,p3)
 ```
 
-Figure \ref{fig:distribution1} plots the distribution for all continuous variables being considered as potential covariates.  The plots show the distribution is noticibly skewed in each case
+Figure \ref{fig:dist.cov.box} plots the distribution for all continuous variables being considered as potential covariates.  The plots show the distribution is noticibly skewed in each case
+
+```{r}
+
+```
+
 
 \subsection{visualize factors}
 
-Figure \ref{fig:distribution2} shows the distribution of the of Score and Seminal factors
-```{r distribution2, echo=FALSE, include=TRUE, fig.cap="distribution of factor variables",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+Figure \ref{fig:dist.cat} shows the distribution of the of Score and Seminal factors
+```{r dist.cat, echo=FALSE, include=TRUE, fig.cap="distribution of factor variables",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 par(mfrow = c(1,2))
 tab1(data2$seminal, main = "Distribution of Seminal")
 tab1(data2$score, main="Distribution of Score")
@@ -219,25 +232,113 @@ tab1(data2$score, main="Distribution of Score")
 
 
 
-```{r distribution3, echo=FALSE, message=FALSE, warning=TRUE, fig.cap="Histogram of cancerv, capsular and hyperplasia"}
+```{r dist.cov.hist, echo=FALSE, message=FALSE, warning=TRUE, fig.cap="Histogram of cancerv, capsular and hyperplasia"}
 #par(mfrow=c(2,2))
 p1 <- ggplot(data2, aes(x=cancerv)) + 
   geom_histogram(binwidth = 2)
-p2 <- ggplot(data2, aes(x=capsular)) + 
+p2 <- ggplot(data2, aes(x=log(cancerv))) + 
   geom_histogram(binwidth = 1)
-p3 <- ggplot(data2, aes(x=hyperplasia)) + 
+p3 <- ggplot(data2, aes(x=capsular)) + 
   geom_histogram(binwidth = 0.5)
 grid.arrange(ncol = 2, p1,p2,p3)
 ```
 
-Figure \ref{fig:distribution3} shows the skewness of the three potential covariates, indicating the data may not be normally distributed and problems with non constant variance may exist
+Figure \ref{fig:dist.cov.hist} shows the skewness of the three potential covariates, indicating the data may not be normally distributed and problems with non constant variance may exist.  A log transformation improved the distribution of Cancer Volume. Capsular does not allow for a similar transformation because of the observations with a value of '0'
+
+
+```{r, echo=FALSE}
+lm.cancerv <- lm(data = data2, psa ~ cancerv)
+lm.cancerv.log <- lm(data = data2, log(psa) ~ log(cancerv))
+lm.capsular <- lm(data = data2, log(psa) ~ (capsular))
+```
+
+```{r capsular.dist, echo=FALSE, fig.cap="Visualize Capsular distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+
+summary(lm.capsular)
+par(mfrow=c(1,2))
+plot(y=data2$psa,x=data2$capsular, 
+     xlab="PSA", 
+     ylab="Capsular", 
+     main="Capsular Regression Fit")
+abline(lm.capsular)
+
+plot(fitted(lm.capsular),residuals(lm.capsular), 
+     xlab="residuals",
+     ylab="fitted",
+     main = "Cancer Volume fitted \n vs residuals")
+abline(h = 0)
+```
+
+the fitted line in Figure \ref{fig:capsular.dist} indicates a poor linear relationship between PSA and Capsular.  The figure also shows indications the residuals will not support the non constant variance assumptions required for inference
+
+```{r cancerv.dist, echo=FALSE, fig.cap="Visualize cancer volume distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+summary(lm.cancerv)
+par(mfrow=c(1,2))
+plot(y=data2$psa,x=data2$cancerv, 
+     xlab="PSA", 
+     ylab="Cancer Volume", 
+     main="Cancer Volume Regression Fit")
+abline(lm.cancerv)
+
+plot(fitted(lm.cancerv),residuals(lm.cancerv), 
+     xlab="residuals",
+     ylab="fitted",
+     main = "Cancer Volume fitted vs residuals")
+abline(h = 0)
+
+```
+
+Figure \ref{fig:cancerv.dist} Shows very clear evidence of distribution problems.  The non constant variance test and shapiro-wilks test both indicate the data violates the assumption of constant variance and normal distribution
+
+
+```{r echo=FALSE}
+ncvp <-ncvTest(lm.cancerv)$p
+swp <- shapiro.test(residuals(lm.cancerv))$p.value
+```
+
+The non-constant variance test and shapiro wilks test both indicate a problem with the distribution of the residuals.  The Shapiro-wilks p-value is `r swp` and the non-constant variance test p-value is `r ncvp` indicating the residuals are not normally distributed and the non-constant varaiance assumptions must be rejected. 
+
+\subsection{Cancer Volume transformation}
+
+A log transformation of both psa and cancerv was found to generate a normal distribution of the residuals and also removed the problems with homoscedacity.
+
+The regression plot and plot of the residuals vs. the fitted variables both indicate improvements in the distribution of the data
+
+The p.values for shapiro wilks test and non-constant variance tests allow acceptance of the null hypothesis 
+
+```{r log.cancerv.dist, echo=FALSE, include=TRUE, fig.cap="cancer volume distribution after a log log transformation",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+
+par(mfrow=c(1,2))
+summary(lm.cancerv.log)
+plot(y=log(data2$psa),x=log(data2$cancerv), 
+     xlab="log(PSA)", 
+     ylab="log(Cancer Volume)", 
+     main="Cancer Volume \n Regression Fit")
+
+abline(lm.cancerv.log)
+
+plot(fitted(lm.cancerv.log),residuals(lm.cancerv.log), 
+     xlab="residuals",
+     ylab="fitted",
+     main = "Log(Cancer Vol.)\n fitted vs residuals")
+abline(h = 0)
+```
+
+```{r tab4, results="asis",echo=FALSE, include=TRUE, message=TRUE}
+ncvp <-ncvTest(lm.cancerv.log)$p
+swp <- shapiro.test(residuals(lm.cancerv.log))$p.value
+t<- data.frame(a=c(swp),b=c(ncvp))
+knitr::kable(t,col.names =c("Shapiro-wilks p-value","ncv test p-value"),label="tab:tab4",caption = "Shapiro-wilks and ncv test")
+```
 
 \section{Compare Covariates}
 
-```{r echo=FALSE}
-b <- regsubsets(psa ~ cancerv+hyperplasia+seminal+capsular+score, data = data2)
+```{r echo=FALSE, results = 'asis'}
+b <- regsubsets(log(psa) ~ log(cancerv)+seminal+capsular+score, data = data2)
 rs <- summary(b)
-kable(with(rs, cbind(which, rss, adjr2, cp, bic)), digits = 4)
+t <- data.frame(with(rs, cbind(which, rss, adjr2, cp, bic)), digits = 4) 
+colnames(t) <- c("Intercept","Cancer Vol","Seminal","Capsular","Score8","RSS","AdjR2","cp","BIC")
+knitr::kable(t[,2:9])
 ```
 
 \section{test variables} 
@@ -254,73 +355,7 @@ test for linearity and variance for each variable
 \ subsection{regression models}
 
 
-```{r distribution4, echo=FALSE, fig.cap="Visualize cancer volume distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
-#lm.capsular <- lm(data = data2, psa ~ capsular)
-lm.cancerv <- lm(data = data2, psa ~ cancerv)
-lm.seminal <- lm(data = data2, psa ~ seminal)
-lm.score <- lm(data = data2, psa ~ score)
+```{r}
 
-par(mfrow=c(1,2))
-
-plot(y=data2$psa,x=data2$cancerv, 
-     xlab="PSA", 
-     ylab="Cancer Volume", 
-     main="Cancer Volume Regression Fit")
-abline(lm.cancerv)
-
-plot(fitted(lm.cancerv),residuals(lm.cancerv), 
-     xlab="residuals",
-     ylab="fitted",
-     main = "Cancer Volume fitted vs residuals")
-abline(h = 0)
-```
-
-Figure \ref{fig:distribution4} Shows very clear evidence of distribution problems.  The non constant variance test and shapiro-wilks test both indicate the data violates the assumption of constant variance and normal distribution
-
-
-```{r tab3, results="asis",echo=FALSE, include=TRUE, message=TRUE}
-ncvp <-ncvTest(lm.cancerv.t)$p
-swp <- shapiro.test(residuals(lm.cancerv.t))$p.value
-t<- data.frame(a=c(swp),b=c(ncvp))
-knitr::kable(t,col.names =c("Shapiro-wilks p-value","ncv test p-value"),label="tab:tab3",caption = "Shapiro-wilks and ncv test after log log transformation")
-```
-
-The non-constant variance test and shapiro wilks test in table \ref{tab1} both indicate a problem with the distribution of the residuals
-
-The data shows problems with normal distribution which must be corrected if the data is to be used for inference
-
-\subsection{log log transformation}
-
-A log transformation of both psa and cancerv was found to provide a normal distribution of the residuals and also removed the problems with homoscedacity.
-
-The regression plot and plot of the residuals vs. the fitted variables both indicate improvements in the distribution of the data
-
-The p.values for shapiro wilks test and non-constant variance tests allow acceptance of the null hypothesis 
-
-```{r distribution5, echo=FALSE, include=TRUE, fig.cap="cancer volume distribution after a log log transformation",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
-lm.cancerv.t <- lm(log(psa) ~ log(cancerv), data = data2)
-
-par(mfrow=c(1,2))
-
-plot(y=log(data2$psa),x=log(data2$cancerv), 
-     xlab="log(PSA)", 
-     ylab="log(Cancer Volume)", 
-     main="Cancer Volume \n Regression Fit")
-
-abline(lm.cancerv.t)
-
-plot(fitted(lm.cancerv.t),residuals(lm.cancerv.t), 
-     xlab="residuals",
-     ylab="fitted",
-     main = "Log(Cancer Vol.)\n fitted vs residuals")
-abline(h = 0)
-```
-
-```{r tab4, results="asis",echo=FALSE, include=TRUE, message=TRUE}
-ncvp <-ncvTest(lm.cancerv.t)$p
-swp <- shapiro.test(residuals(lm.cancerv.t))$p.value
-t<- data.frame(a=c(swp),b=c(ncvp))
-knitr::kable(t,col.names =c("Shapiro-wilks p-value","ncv test p-value"),label="tab:tab4",caption = "Shapiro-wilks and ncv test")
-```
 ```
 
