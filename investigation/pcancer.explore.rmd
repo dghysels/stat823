@@ -10,7 +10,7 @@ output:
 ```{r message=FALSE}
 
 library(readxl)
-pcancerdf <- read_xlsx("../823data/pcancer.xlsx")
+pcancerdf <- read_xlsx("../../823data/pcancer.xlsx")
 #change score and seminal to factors
 #the levels keep the default names for now...
 pcancerdf$score <- factor(pcancerdf$score)

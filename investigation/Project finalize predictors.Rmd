@@ -9,7 +9,7 @@ library(leaps)
 library(car)
 library(faraway)
 
-pcancerdf <- read_xlsx("../823data/pcancer.xlsx")
+pcancerdf <- read_xlsx("../../823data/pcancer.xlsx")
 
 pcancerdf.sub <- pcancerdf[c(1:94),] #discard 97
 ```
@@ -61,8 +61,8 @@ lm.cancerv.sub <- lm(data=pcancerdf.sub, psa ~ cancerv) # subset (influential ob
 lm.cancerv.sub.log <- lm(data=pcancerdf.sub, psa ~ log(cancerv)) #log of subset
 
 #------------weight, age, hyperplasia-------
-#lm.weight <- lm(data = pcancerdf, psa ~ weight)
-#lm.age <- lm(data = pcancerdf, psa ~ age)
+lm.weight <- lm(data = pcancerdf, psa ~ weight)
+lm.age <- lm(data = pcancerdf, psa ~ age)
 #lm.hyperplasia <- lm(data = pcancerdf, psa ~ hyperplasia)
 
 #------------seminal invasion------------------------
@@ -421,6 +421,7 @@ lm.mult.2cov.e <- lm(data = pcancerdf, psa ~ capsular + seminal)
 summary(lm.mult.2cov.e)
 ```
 
+
 ### Two covariates test of residuals
 
 ```{r}
@@ -458,6 +459,25 @@ summary(lm.mult.3cov.b)
 lm.mult.3cov.c <- lm(data = pcancerdf, psa ~ log(cancerv) + capsular + seminal)
 summary(lm.mult.3cov.c)
 ```
+
+```{r}
+data2 <- pcancerdf
+lm.mult.3cov.d <- lm(data = data2, psa ~ cancerv + score + seminal)
+summary(lm.mult.3cov.d)
+anova(lm.mult.3cov.d)
+
+lm.mult.2cov.c <- lm(data = data2, psa ~ cancerv + seminal)
+summary(lm.mult.2cov.c)
+anova(lm.mult.2cov.c)
+```
+
+```{r}
+summary(lm.mult.3cov.d)
+anova(lm.mult.3cov.d)
+```
+
+
+
 ### Two covariates test of residuals
 
 #### Shapiro-wilks test
@@ -473,5 +493,6 @@ ncvTest(lm.mult.3cov.a)
 ncvTest(lm.mult.3cov.b)
 ncvTest(lm.mult.3cov.c)
 ```
+
 
 
