@@ -1,0 +1,217 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(readxl)
+library(leaps)
+library(car)
+library(faraway)
+pcancerdf <- read_xlsx("../823data/pcancer.xlsx")
+#change score and seminal to factors
+#the levels keep the default names for now...
+pcancerdf$score <- factor(pcancerdf$score)
+pcancerdf$seminal <- factor(pcancerdf$seminal)
+```
+
+```{r}
+library(corrplot)
+library(RColorBrewer)
+M <-cor(pcancerdf[c(2,3,4,5,6,8)])
+corrplot(M, type="upper", order="hclust",
+         col=brewer.pal(n=8, name="RdYlBu"))
+```
+
+
+```{r}
+summary(pcancerdf)
+```
+
+
+```{r}
+lm.cancerv <- lm(data = pcancerdf, psa ~ cancerv)
+lm.weight <- lm(data = pcancerdf, psa ~ weight)
+lm.age <- lm(data = pcancerdf, psa ~ age)
+lm.hyperplasia <- lm(data = pcancerdf, psa ~ hyperplasia)
+lm.seminal <- lm(data = pcancerdf, psa ~ seminal)
+lm.capsular <- lm(data = pcancerdf, psa ~ capsular)
+lm.score <- lm(data = pcancerdf, psa ~ score)
+```
+
+```{r}
+round(summary(lm.cancerv)$coefficients,4)
+round(summary(lm.cancerv)$r.squared,4)
+round(summary(lm.weight)$coefficients,4)
+round(summary(lm.weight)$r.squared,4)
+round(summary(lm.age)$coefficients,4)
+round(summary(lm.age)$r.squared,4)
+round(summary(lm.hyperplasia)$coefficients,4)
+round(summary(lm.hyperplasia)$r.squared,4)
+round(summary(lm.seminal)$coefficients,4)
+round(summary(lm.seminal)$r.squared,4)
+round(summary(lm.capsular)$coefficients,4)
+round(summary(lm.capsular)$r.squared,4)
+round(summary(lm.score)$coefficients,4)
+round(summary(lm.score)$r.squared,4)
+```
+
+psa VS cancerv
+```{r}
+plot(y = pcancerdf$psa, x = pcancerdf$cancerv)
+abline(lm.cancerv)
+plot(lm.cancerv)
+```
+
+psa vs capsular
+```{r}
+plot(y = pcancerdf$psa, x = pcancerdf$capsular)
+abline(lm.capsular)
+plot(lm.capsular)
+```
+
+```{r}
+pcancerdf.sub <- pcancerdf[c(1:94,96),]
+lm.capsular.sub <- lm(data = pcancerdf.sub, psa ~ capsular)
+plot(y = pcancerdf.sub$psa, x = pcancerdf.sub$capsular)
+abline(lm.capsular.sub)
+abline(lm.capsular)
+plot(lm.capsular.sub)
+summary(lm.capsular.sub)
+summary(lm.capsular)
+```
+
+
+
+```{r}
+model.regsubsets <- regsubsets(psa ~ cancerv + capsular, data = pcancerdf)
+model.regsubsets.summ <- summary(model.regsubsets)
+
+regsubsets.df <- data.frame(model.regsubsets.summ$which, model.regsubsets.summ$adjr2,model.regsubsets.summ$cp,model.regsubsets.summ$bic)
+colnames(regsubsets.df) <- c("Intercept","cancerv","capsular","adj r2","cp","bic")
+regsubsets.df
+```
+
+look at the cooks distance for influential points
+```{r}
+capsular.cooks <- cooks.distance(lm.capsular)
+halfnorm(capsular.cooks,3, main = "cooks distance")
+```
+
+```{r}
+lm.capsular.2 <- lm(data = pcancerdf, psa ~ capsular, sub = -c(97))
+plot(y = pcancerdf$psa, x = pcancerdf$capsular)
+abline(lm.capsular.2)
+summary(lm.capsular)
+summary(lm.capsular.2)
+```
+
+```{r}
+pcancerdf.sub <- pcancerdf[pcancerdf$idnum != 97,]
+
+par(mfrow = c(1,2))
+lm.capsular.2 <- lm(data = pcancerdf.sub, psa ~ capsular)
+plot(y = pcancerdf.sub$psa, x = pcancerdf.sub$capsular)
+plot(y = pcancerdf$psa, x = pcancerdf$capsular)
+abline(lm.capsular.2)
+abline(lm.capsular)
+summary(lm.capsular)
+summary(lm.capsular.2)
+```
+
+
+```{r}
+cancerv.cooks <- cooks.distance(lm.cancerv)
+halfnorm(cancerv.cooks,3, main = "cooks distance")
+```
+
+Multiple Regression
+
+```{r}
+lm.mult.2 <- lm(data = pcancerdf, psa ~ cancerv + capsular)
+lm.mult.3.seminal <- lm(data = pcancerdf, psa ~ cancerv + capsular + seminal)
+lm.mult.3.score <- lm(data = pcancerdf, psa ~ cancerv + capsular + score)
+
+summary(lm.mult.2)
+summary(lm.capsular)
+summary(lm.cancerv)
+#summary(lm.mult.3.seminal)
+#summary(lm.mult.3.score)
+```
+
+```{r}
+lm.mult.sub.2 <- lm(data = pcancerdf.sub, psa ~ cancerv + capsular + seminal)
+summary(lm.mult.2)
+summary(lm.mult.sub.2)
+```
+
+
+------------------------------ seminal and score ----------------
+
+```{r}
+lm.seminal <- lm(data = pcancerdf, psa ~ seminal)
+summary(lm.seminal)
+
+plot(lm.seminal)
+```
+
+
+
+------------------------------ weight, age and hyperplasia---------
+
+psa vs weight
+
+```{r}
+plot(y = pcancerdf$psa, x = pcancerdf$weight)
+abline(lm.weight)
+```
+
+```{r}
+lm.weight.2 <- lm(data = pcancerdf, psa ~ weight, subset = (weight < 100))
+plot(y = pcancerdf$psa, x = pcancerdf$weight)
+abline(lm.weight.2)
+```
+
+```{r}
+plot(y = pcancerdf$psa, x = pcancerdf$age)
+abline(lm.age)
+```
+
+
+psa vs hyperplasia
+```{r}
+plot(y = pcancerdf$psa, x = pcancerdf$hyperplasia)
+abline(lm.hyperplasia)
+```
+
+remove all values with zero from hyperplasia
+
+```{r}
+pcancerdf.sub <- pcancerdf[pcancerdf$hyperplasia > 0,]
+lm.hyperplasia.sub <- lm(data= pcancerdf.sub, psa ~ hyperplasia)
+plot(y = pcancerdf.sub$psa, x = pcancerdf.sub$hyperplasia)
+abline(lm.hyperplasia.sub)
+summary(lm.hyperplasia.sub)
+```
+
+hyperplasia without zeros is now clearly a negative slope
+
+
+look at the cooks distance for influential points
+```{r}
+lm.hyperplasia.cooks <- cooks.distance(lm.hyperplasia)
+halfnorm(lm.hyperplasia.cooks,3, main = "cooks distance")
+```
+
+
+remove the the three most influential
+```{r}
+lm.hyperplasia.2 <- lm(data = pcancerdf, psa ~ hyperplasia, sub = -c(95,96,97))
+plot(y = pcancerdf.sub$psa, x = pcancerdf.sub$hyperplasia)
+abline(lm.hyperplasia.2)
+summary(lm.hyperplasia)
+summary(lm.hyperplasia.2)
+```
+
+
