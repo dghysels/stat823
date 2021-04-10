@@ -28,7 +28,7 @@ subparagraph: yes
 	breaklines=true}
 	
   \pagestyle{fancy}
-  \fancyhead[L]{\textbf{abc, efg, hij}}
+  \fancyhead[L]{\textbf{Don, Mel, Madhumithra}}
   \fancyhead[C]{}
   \fancyhead[R]{\textbf{STAT 823 Project}}
   \fancyfoot[L]{}
@@ -83,8 +83,11 @@ library(xtable)
 library(readxl)
 library(ggplot2)
 library(ggcorrplot)
+library(gridExtra)
+library(leaps)
+library(car)
 knitr::opts_chunk$set(echo = TRUE)
-options(digits = 5, width = 60, xtable.comment = FALSE)
+options(digits = 5, width = 60, xtable.comment = FALSE)#,knitr.table.format="latex")
 opts_chunk$set(tidy.opts = list(width.cutoff=60), tidy=TRUE)
 out_type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
 ```
@@ -111,27 +114,53 @@ Put your abstract here
 \newpage
 
 \section{Introduction}
---------------  
-Put all your introduction about the study topic here and cite some references. 
+Put all your introduction about the study topic here and cite some references. For example,  The textbook ``\textbf{Design and Analysis of Experiments}'' by \citet{voss} is required. Additional materials that you may wish to consult include \citet{casella}, \citet{kuehl} and \citet{shalabh}.
 
-For example,  The textbook ``\textbf{Design and Analysis of Experiments}'' by \citet{voss} is required. 
+\subsection{Primary Analysis Objectives}
 
-Additional materials that you may wish to consult includ
-\citet{casella}, 
-\citet{kuehl}, 
-\citet{shalabh}.
+Determine whether compound XYZ reduces human leukocyte antigen (HLA) alloreactivity as measured by calculated panel reactive antibodies (cPRA) at week 16 compared to baseline (week 0) measures.
 
-\subsectionsection{Data Sources}
+\subsection{Secondary Analysis Objectives}
+
+Summarize patient demographic and baseline clinical characteristics
+
+Patients experiencing end-stage renal disease (ESRD) often require a kidney transplant as it prolongs survival, decreases morbidity, and improves quality of life.  Given that over 100,000 patients are awaiting kidney transplantation, it is desirable to find ways for patients to decrease their waiting time in hopes of obtaining a transplant sooner.  A growing number of patients with ESRD have developed antibodies against human leukocyte antigens (HLAs), limiting their options for finding a reliable matching donor.  Having a treatment that reduces HLAs could have a profound impact for patients experiencing ESRD.  Study ABCD is an open-label trial exploratory study investigating the effect of compound XYZ in patients with ESRD and calculated panel reactive antibodies (cPRAs) greater than 50 percent.  
+
+\section{Materials and Methods}
+\subsection{Data Sources}
+The dataset was obtained from one of the published datasets by \citet{kutner} [Here are the book's datasets](http://users.stat.ufl.edu/~rrandles/sta4210/Rclassnotes/data/textdatasets/index.html). Describe more about the data set, its variables and why you selected it.
+
+This is how you include R code within RMarkdown:
+````
+```{r, message=FALSE}`r ''`
+```
+````
+
+\subsection{Statistical Analysis}
+
+Describe the statistical model or models used
+
+\subsubsection{Model Assumptions}
+
+All inferences are conducted using $\alpha = 0.05$ unless stated otherwise.  No adjustments for multiplicity are made as this is an exploratory analysis. Discrete variables are summarized with proportions and frequencies.  Continuous variables are summarized using the following statistics:
+
+\subsubsection{Primary Objective Analysis}
+
+The primary objective analysis uses a Wilcoxon signed rank test to determine if there is a significant difference between cPRA scores at baseline and at week 16.  
+
+\subsubsection{Secondary Objective Analyses}
+
+Summary statistics are produced for baseline characteristics.  
+
+\subsubsection{Goodness of Fit Test}
+
+Describe here what goodness of fit statistics were used or will be used.
+
+All of the statistical analyses in this document will be performed using `r R.version.string` [R](https://www.r-project.org/) \citep{r2018}.
+R packages used will be maintained using the [packrat](http://rstudio.github.io/packrat/) dependency management system. 
 
 
-\subsectionsection{Model Assumptions}
-
-
-\subsectionsection{Data Sources}
-
-\section{Analysis of Covariates}
-
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 dataraw <- read_xlsx("../823data/pcancer.xlsx")
 
 data2 <- data.frame(dataraw)
@@ -141,11 +170,157 @@ data2$score <- factor(dataraw$score)
 levels(data2$score) <- c("6", "7", "8")
 attach(data2)
 ```
-\subsection{analysis of continuous Covariates}
+\section{Results}
+
+Describe your results here. Add subheadings if necessary.
+
+\subsection{summary of statistics}
+
+```{r echo=FALSE, message=FALSE}
+library(epiDisplay)
+knitr::kable(summ(data2[2:9]),caption = "Summary of statistics")
+```
+
+\subsection{Analysis of Covariates}
+
+
+
+```{r correlation, echo=FALSE, include=TRUE, message=FALSE, warning=TRUE, fig.cap="Correlation of available continuous covariates", fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+library(psych)
+pairs.panels(data2[c(2:6,8)])
+##corr <- round(cor(data2[,c(2:6)]),4)
+##ggcorrplot(corr, hc.order = TRUE, type = "lower",lab = TRUE)
+```
+
+Correlation coefficients in Figure \ref{fig:correlation} indicate the best relationships are between psa and capsular and between psa and cancer volume 
+
+The correlation between psa and weight and psa and age are considered tool low to consider these variables these variables as potential covariates. 
+
+```{r distribution1, echo=FALSE, include=TRUE, fig.cap="Distribution of continuous variables",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+p1 <- ggplot(data2, aes(y=cancerv,x=1)) + 
+  geom_boxplot() + geom_jitter(position=position_jitter(0.05))
+p2 <- ggplot(data2, aes(y=capsular,x=1)) + 
+  geom_boxplot()+ geom_jitter(position=position_jitter(0.05))
+p3 <- ggplot(data2, aes(y=hyperplasia,x=1)) + 
+  geom_boxplot()+ geom_jitter(position=position_jitter(0.05))
+grid.arrange(ncol = 2, p1,p2,p3)
+```
+
+Figure \ref{fig:distribution1} plots the distribution for all continuous variables being considered as potential covariates.  The plots show the distribution is noticibly skewed in each case
+
+\subsection{visualize factors}
+
+Figure \ref{fig:distribution2} shows the distribution of the of Score and Seminal factors
+```{r distribution2, echo=FALSE, include=TRUE, fig.cap="distribution of factor variables",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+par(mfrow = c(1,2))
+tab1(data2$seminal, main = "Distribution of Seminal")
+tab1(data2$score, main="Distribution of Score")
+```
+
+
+
+```{r distribution3, echo=FALSE, message=FALSE, warning=TRUE, fig.cap="Histogram of cancerv, capsular and hyperplasia"}
+#par(mfrow=c(2,2))
+p1 <- ggplot(data2, aes(x=cancerv)) + 
+  geom_histogram(binwidth = 2)
+p2 <- ggplot(data2, aes(x=capsular)) + 
+  geom_histogram(binwidth = 1)
+p3 <- ggplot(data2, aes(x=hyperplasia)) + 
+  geom_histogram(binwidth = 0.5)
+grid.arrange(ncol = 2, p1,p2,p3)
+```
+
+Figure \ref{fig:distribution3} shows the skewness of the three potential covariates, indicating the data may not be normally distributed and problems with non constant variance may exist
+
+\section{Compare Covariates}
+
 ```{r echo=FALSE}
-summary(data2)
-corr <- round(cor(data2[,c(3,4,5,6)]),4)
-ggcorrplot(corr, hc.order = TRUE, type = "lower",
-   lab = TRUE)
+b <- regsubsets(psa ~ cancerv+hyperplasia+seminal+capsular+score, data = data2)
+rs <- summary(b)
+kable(with(rs, cbind(which, rss, adjr2, cp, bic)), digits = 4)
+```
+
+\section{test variables} 
+
+Based on cp, bic and $R^{2}$ results, analysis will be focused on the following 3 covariates: 
+
+\begin{itemize}
+  \item Cancer Volume
+  \item Gleason Score
+  \item Seminal Vesicle Invasion
+\end{itemize}
+
+test for linearity and variance for each variable
+\ subsection{regression models}
+
+
+```{r distribution4, echo=FALSE, fig.cap="Visualize cancer volume distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+#lm.capsular <- lm(data = data2, psa ~ capsular)
+lm.cancerv <- lm(data = data2, psa ~ cancerv)
+lm.seminal <- lm(data = data2, psa ~ seminal)
+lm.score <- lm(data = data2, psa ~ score)
+
+par(mfrow=c(1,2))
+
+plot(y=data2$psa,x=data2$cancerv, 
+     xlab="PSA", 
+     ylab="Cancer Volume", 
+     main="Cancer Volume Regression Fit")
+abline(lm.cancerv)
+
+plot(fitted(lm.cancerv),residuals(lm.cancerv), 
+     xlab="residuals",
+     ylab="fitted",
+     main = "Cancer Volume fitted vs residuals")
+abline(h = 0)
+```
+
+Figure \ref{fig:distribution4} Shows very clear evidence of distribution problems.  The non constant variance test and shapiro-wilks test both indicate the data violates the assumption of constant variance and normal distribution
+
+
+```{r tab3, results="asis",echo=FALSE, include=TRUE, message=TRUE}
+ncvp <-ncvTest(lm.cancerv.t)$p
+swp <- shapiro.test(residuals(lm.cancerv.t))$p.value
+t<- data.frame(a=c(swp),b=c(ncvp))
+knitr::kable(t,col.names =c("Shapiro-wilks p-value","ncv test p-value"),label="tab:tab3",caption = "Shapiro-wilks and ncv test after log log transformation")
+```
+
+The non-constant variance test and shapiro wilks test in table \ref{tab1} both indicate a problem with the distribution of the residuals
+
+The data shows problems with normal distribution which must be corrected if the data is to be used for inference
+
+\subsection{log log transformation}
+
+A log transformation of both psa and cancerv was found to provide a normal distribution of the residuals and also removed the problems with homoscedacity.
+
+The regression plot and plot of the residuals vs. the fitted variables both indicate improvements in the distribution of the data
+
+The p.values for shapiro wilks test and non-constant variance tests allow acceptance of the null hypothesis 
+
+```{r distribution5, echo=FALSE, include=TRUE, fig.cap="cancer volume distribution after a log log transformation",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+lm.cancerv.t <- lm(log(psa) ~ log(cancerv), data = data2)
+
+par(mfrow=c(1,2))
+
+plot(y=log(data2$psa),x=log(data2$cancerv), 
+     xlab="log(PSA)", 
+     ylab="log(Cancer Volume)", 
+     main="Cancer Volume \n Regression Fit")
+
+abline(lm.cancerv.t)
+
+plot(fitted(lm.cancerv.t),residuals(lm.cancerv.t), 
+     xlab="residuals",
+     ylab="fitted",
+     main = "Log(Cancer Vol.)\n fitted vs residuals")
+abline(h = 0)
+```
+
+```{r tab4, results="asis",echo=FALSE, include=TRUE, message=TRUE}
+ncvp <-ncvTest(lm.cancerv.t)$p
+swp <- shapiro.test(residuals(lm.cancerv.t))$p.value
+t<- data.frame(a=c(swp),b=c(ncvp))
+knitr::kable(t,col.names =c("Shapiro-wilks p-value","ncv test p-value"),label="tab:tab4",caption = "Shapiro-wilks and ncv test")
+```
 ```
 
