@@ -3,7 +3,6 @@ biblio-style: jabes
 bibliography: lazbibreg.bib
 documentclass: report
 fontsize: 12pt
-geometry: margin=1in
 header-includes: \usepackage{mdwlist} \usepackage[compact]{titlesec} \usepackage{titling}
   \usepackage[font=small,labelfont=bf,tableposition=top]{caption} \usepackage{float}
   \floatstyle{plaintop} \restylefloat{table} \usepackage{lastpage} \usepackage{hyperref}
@@ -86,7 +85,9 @@ library(ggcorrplot)
 library(gridExtra)
 library(leaps)
 library(car)
-knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(faraway)
+knitr::opts_chunk$set(echo = FALSE)
 options(digits = 5, width = 60, xtable.comment = FALSE)#,knitr.table.format="latex")
 opts_chunk$set(tidy.opts = list(width.cutoff=60), tidy=TRUE)
 out_type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
@@ -128,10 +129,30 @@ Patients experiencing end-stage renal disease (ESRD) often require a kidney tran
 
 \section{Materials and Methods}
 \subsection{Data Sources}
-The dataset was obtained from one of the published datasets by \citet{kutner} [Here are the book's datasets](http://users.stat.ufl.edu/~rrandles/sta4210/Rclassnotes/data/textdatasets/index.html). Describe more about the data set, its variables and why you selected it.
+The dataset was obtained from the stat823 project materials. The data set was selected due to the teams interest in exploring a science related topic as well as the interesting data distributions.
 
-The data available for inclusion in the covariates include 5 continuous variables and 2 categorical variables. The 5 continuous variables included \textit{Estimate of prostate cancer volume (cc) \textbf(VOL)}, \textit{Prostate weight(gm) \textbf{(WT)}}, \textit{Age of patient (years) \textbf(AGE)}, \textit{Amount of benign prostatic hyperplasia ($cm^{2}$) \textbf{HYP}}, \textbf{Degree of capsular penetration(cm) \textbf{CAP}}.  The 2 categorical variables include \textit{Seminal Vesical Invasion \textbf{SEM}}, \textit{Cleason Score \textbf{SCORE}}
+The data set includes 8 data variables.  The response vararible of interest is \textbf{Serum prostate-specific antigen level} and 7 clinical measures which inclue \textbf{Estimate of prostate cancer volume}, \textbf{Prostate weight}, \textbf{Age of patient}, \textbf{Amount of benign prostatic hyperplasia}, \textbf{Degree of capsular penetration}, \textbf{Seminal Vesical Invasion}, and the \textbf{Cleason Score}.
 
+\begin{table}
+\caption{Potential Model Covariates}
+\centering
+\begin{tabular}{c c c c}
+\hline
+Variable & Units & Abbreviation & Type \\ [0.5ex] % inserts table
+%heading
+\hline
+Serum prostate-specific antigen level & mg/ml & PSA & \textbf{Response} \\ % inserting body of the table
+Estimate of prostate cancer volume & $cm^{3}$ & VOL & Continuous \\ 
+Prostate weight  & gm & WT & Continuous \\
+Age of patient & Years & AGE & Continuous \\
+Amount of benign prostatic hyperplasia & $cm^{2}$ & HYP & Continuous \\
+Degree of capsular penetration & cm & CAP & Continuous \\
+Seminal Vesical Invasion & y/n & SEM & Categorical \\ 
+Cleason Score & na & SCORE & Categorical \\ [1ex] % [1ex] adds vertical space
+\hline %inserts single line
+\end{tabular}
+\label{table:model.variables}
+\end{table}
 
 \subsection{Statistical Analysis}
 
@@ -174,14 +195,15 @@ Describe your results here. Add subheadings if necessary.
 
 \subsection{summary of statistics}
 
-```{r echo=FALSE, message=FALSE}
+```{r tab.summary, echo=FALSE, message=FALSE, results='asis'}
 library(epiDisplay)
-knitr::kable(summ(data2[2:9]),caption = "Summary of statistics")
+summ.table <- summ(data2[2:9])$table
+summ.table[1:8] <- c("PSA","VOL","WT","AGE","HYP","SEM","CAP","SCORE")
+colnames(summ.table) <- c("Variable","Obs. Count","Mean","Median","SD","Min.","Max.")
+xtable(summ.table,label="tab:tab.summary",caption = "Summary of statistics")
 ```
 
-\subsection{Analysis of Covariates}
-
-
+\section{Analysis of Covariates}
 
 ```{r correlation, echo=FALSE, include=TRUE, message=FALSE, warning=TRUE, fig.cap="Correlation of available continuous covariates", fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 library(psych)
@@ -191,27 +213,45 @@ library(GGally)
 ggpairs(data2[c(2:6,8)],ggplot2::aes())
 ```
 
-Correlation coefficients in Figure \ref{fig:correlation} indicate the best relationships are between psa and capsular and between psa and cancer volume 
+Correlation coefficients in Figure \ref{fig:correlation} indicate the best relationships are between \textit{psa} and \textit{capsular} and between \textit{psa} and \textit{cancer volume} 
 
-The correlation between weight, hyperplasia and age were considered to weak for further exploration. 
+The correlation between \textit{weight}, \textit{hyperplasia} and \textit{age} are much weaker. 
 
 ```{r dist.cov.box, echo=FALSE, include=TRUE, fig.cap="Distribution of continuous variables",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 p1 <- ggplot(data2, aes(y=cancerv,x=1)) + 
   geom_boxplot() + 
-  geom_jitter(position=position_jitter(0.05))
-p2 <- ggplot(data2, aes(y=log(cancerv),x=1), title="Cancer Volume") + 
+  ggtitle("(a) Cancer Volume") + 
+  labs(x="") + 
+  geom_jitter(position=position_jitter(0.05)) + 
+  theme(plot.title = element_text(color="blue", size=10, face="bold.italic"))
+
+p2 <- ggplot(data2, aes(y=capsular,x=1)) + 
   geom_boxplot() + 
+  ggtitle("(b) Capsular penetration") + 
+  labs(x="") + 
   geom_jitter(position=position_jitter(0.05))
-p3 <- ggplot(data2, aes(y=capsular,x=1), title="Cancer Volume") + 
-  geom_boxplot()+ 
+
+p3 <- ggplot(data2, aes(y=hyperplasia,x=1)) + 
+  geom_boxplot() + 
+  ggtitle("(c) Hyperplasia") + 
+  labs(x="") + 
   geom_jitter(position=position_jitter(0.05))
-p3 <- ggplot(data2, aes(y=capsular,x=1), title="Cancer Volume") + 
-  geom_boxplot()+ 
+
+p4 <- ggplot(data2, aes(y=weight,x=1)) + 
+  geom_boxplot() + 
+  ggtitle("(d) Weight") + 
+  labs(x="") + 
   geom_jitter(position=position_jitter(0.05))
-p3 <- ggplot(data2, aes(y=capsular,x=1), title="Cancer Volume") + 
-  geom_boxplot()+ 
+
+p5 <- ggplot(data2, aes(y=age,x=1)) + 
+  geom_boxplot() + 
+  ggtitle("(e) Age") + 
+  labs(x="") + 
   geom_jitter(position=position_jitter(0.05))
-grid.arrange(ncol = 2, p1,p2,p3)
+
+grid.arrange(ncol = 2, p1,p2)
+grid.arrange(ncol = 2, p3,p4)
+grid.arrange(ncol = 2, p5)
 ```
 
 Figure \ref{fig:dist.cov.box} plots the distribution for all continuous variables being considered as potential covariates.  The plots show the distribution is noticibly skewed in each case
@@ -219,9 +259,6 @@ Figure \ref{fig:dist.cov.box} plots the distribution for all continuous variable
 ```{r}
 
 ```
-
-
-\subsection{visualize factors}
 
 Figure \ref{fig:dist.cat} shows the distribution of the of Score and Seminal factors
 ```{r dist.cat, echo=FALSE, include=TRUE, fig.cap="distribution of factor variables",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
@@ -236,60 +273,167 @@ tab1(data2$score, main="Distribution of Score")
 #par(mfrow=c(2,2))
 p1 <- ggplot(data2, aes(x=cancerv)) + 
   geom_histogram(binwidth = 2)
+
 p2 <- ggplot(data2, aes(x=log(cancerv))) + 
   geom_histogram(binwidth = 1)
+
 p3 <- ggplot(data2, aes(x=capsular)) + 
   geom_histogram(binwidth = 0.5)
+
 grid.arrange(ncol = 2, p1,p2,p3)
 ```
 
 Figure \ref{fig:dist.cov.hist} shows the skewness of the three potential covariates, indicating the data may not be normally distributed and problems with non constant variance may exist.  A log transformation improved the distribution of Cancer Volume. Capsular does not allow for a similar transformation because of the observations with a value of '0'
 
 
-```{r, echo=FALSE}
+```{r, tab.stat.summary, echo=FALSE}
 lm.cancerv <- lm(data = data2, psa ~ cancerv)
 lm.cancerv.log <- lm(data = data2, log(psa) ~ log(cancerv))
-lm.capsular <- lm(data = data2, log(psa) ~ (capsular))
+lm.hyperplasia <- lm(data = data2, psa ~ hyperplasia)
+lm.capsular <- lm(data = data2, psa ~ capsular)
+lm.weight <- lm(data = data2, psa ~ weight)
+lm.weight.log <- lm(data = data2, log(psa) ~ log(weight))
+lm.age <- lm(data = data2, psa ~ age)
+lm.score6 <- lm(data = data2, psa ~ (score==6))
+lm.score7 <- lm(data = data2, psa ~ (score==7))
+lm.score8 <- lm(data = data2, psa ~ (score==8))
+lm.seminal <- lm(data = data2, psa ~ seminal)
+
+summ.cancerv <- summary(lm.cancerv)
+summ.hyperplasia <- summary(lm.hyperplasia)
+summ.capsular <- summary(lm.capsular)
+summ.weight <- summary(lm.weight)
+summ.age <- summary(lm.age)
+summ.score8 <- summary(lm.score8)
+summ.seminal <- summary(lm.seminal)
+
+summ.cancerv.v <- c(summ.cancerv$coefficients[c(2,4,6,8)],summ.cancerv$adj.r.squared,summ.cancerv$fstatistic[1])
+summ.hyperplasia.v <- c(summ.hyperplasia$coefficients[c(2,4,6,8)],summ.hyperplasia$adj.r.squared,summ.hyperplasia$fstatistic[1])
+summ.capsular.v <- c(summ.capsular$coefficients[c(2,4,6,8)],summ.capsular$adj.r.squared,summ.capsular$fstatistic[1])
+summ.age.v <- c(summ.age$coefficients[c(2,4,6,8)],summ.age$adj.r.squared,summ.age$fstatistic[1])
+summ.weight.v <- c(summ.weight$coefficients[c(2,4,6,8)],summ.weight$adj.r.squared,summ.weight$fstatistic[1])
+summ.score8.v <- c(summ.score8$coefficients[c(2,4,6,8)],summ.score8$adj.r.squared,summ.score8$fstatistic[1])
+summ.seminal.v <- c(summ.seminal$coefficients[c(2,4,6,8)],summ.seminal$adj.r.squared,summ.seminal$fstatistic[1])
+
+
+summarydf <- data.frame("VOL"=summ.cancerv.v,
+                        "HYP"=summ.hyperplasia.v,
+                        "CAP"=summ.capsular.v,
+                        "AGE"=summ.age.v,
+                        "WT"=summ.weight.v,
+                        "SCORE"=summ.score8.v,
+                        "SEM"=summ.seminal.v)
+rownames(summarydf) <- c("beta1","std Err","t-value","p-value","adj. R2","f-statistic")
+
+
+for(i in 1:ncol(summarydf)){
+  summarydf[[i]] <- sapply(summarydf[,i],function(x){if(x>0.0001){
+                                                        return(format(x,digits=4))
+                                                      }else{
+                                                        return(format(x,digits=2))
+                                                      }
+                                                    })
+}
+
+knitr::kable(summarydf,label = "tab.stat.summary")
+                        
 ```
 
-```{r capsular.dist, echo=FALSE, fig.cap="Visualize Capsular distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+\subsection{CAP}
 
-summary(lm.capsular)
+```{r CAP.dist, echo=FALSE, fig.cap="Visualize CAP distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+
 par(mfrow=c(1,2))
 plot(y=data2$psa,x=data2$capsular, 
      xlab="PSA", 
-     ylab="Capsular", 
-     main="Capsular Regression Fit")
+     ylab="CAP", 
+     main="CAP Fit")
 abline(lm.capsular)
 
 plot(fitted(lm.capsular),residuals(lm.capsular), 
      xlab="residuals",
      ylab="fitted",
-     main = "Cancer Volume fitted \n vs residuals")
+     main = "CAP fitted \n vs residuals")
 abline(h = 0)
 ```
 
 the fitted line in Figure \ref{fig:capsular.dist} indicates a poor linear relationship between PSA and Capsular.  The figure also shows indications the residuals will not support the non constant variance assumptions required for inference
 
-```{r cancerv.dist, echo=FALSE, fig.cap="Visualize cancer volume distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
-summary(lm.cancerv)
+\subsection{VOL}
+
+```{r VOL.dist, echo=FALSE, fig.cap="Visualize VOL distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 par(mfrow=c(1,2))
 plot(y=data2$psa,x=data2$cancerv, 
      xlab="PSA", 
-     ylab="Cancer Volume", 
-     main="Cancer Volume Regression Fit")
+     ylab="VOL", 
+     main="VOL Fit")
 abline(lm.cancerv)
 
 plot(fitted(lm.cancerv),residuals(lm.cancerv), 
      xlab="residuals",
      ylab="fitted",
-     main = "Cancer Volume fitted vs residuals")
+     main = "VOL fitted vs residuals")
 abline(h = 0)
 
 ```
 
 Figure \ref{fig:cancerv.dist} Shows very clear evidence of distribution problems.  The non constant variance test and shapiro-wilks test both indicate the data violates the assumption of constant variance and normal distribution
 
+\subsection{WT}
+
+
+```{r WT.dist, echo=FALSE, fig.cap="Visualize WT distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+par(mfrow=c(1,2))
+plot(y=data2$psa,x=data2$weight, 
+     xlab="PSA", 
+     ylab="WT", 
+     main="WT Regression Fit")
+abline(lm.weight)
+
+plot(fitted(lm.weight),residuals(lm.weight), 
+     xlab="residuals",
+     ylab="fitted",
+     main = "WT fitted vs residuals")
+abline(h = 0)
+
+```
+
+\subsection{AGE}
+
+```{r AGE.dist, echo=FALSE, fig.cap="Visualize AGE distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+par(mfrow=c(1,2))
+plot(y=data2$psa,x=data2$age, 
+     xlab="PSA", 
+     ylab="AGE", 
+     main="AGE Regression Fit")
+abline(lm.age)
+
+plot(fitted(lm.age),residuals(lm.age), 
+     xlab="residuals",
+     ylab="fitted",
+     main = "AGE fitted vs residuals")
+abline(h = 0)
+
+```
+
+\subsection{HYP}
+
+```{r, HYP.dist, echo=FALSE, fig.cap="Visualize AGE distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+par(mfrow=c(1,2))
+plot(y=data2$psa,x=data2$age, 
+     xlab="PSA", 
+     ylab="HYP", 
+     main="HYP Regression Fit")
+abline(lm.age)
+
+plot(fitted(lm.age),residuals(lm.age), 
+     xlab="residuals",
+     ylab="fitted",
+     main = "HYP fitted vs residuals")
+abline(h = 0)
+
+```
+\subsection{Transformations}
 
 ```{r echo=FALSE}
 ncvp <-ncvTest(lm.cancerv)$p
@@ -297,8 +441,6 @@ swp <- shapiro.test(residuals(lm.cancerv))$p.value
 ```
 
 The non-constant variance test and shapiro wilks test both indicate a problem with the distribution of the residuals.  The Shapiro-wilks p-value is `r swp` and the non-constant variance test p-value is `r ncvp` indicating the residuals are not normally distributed and the non-constant varaiance assumptions must be rejected. 
-
-\subsection{Cancer Volume transformation}
 
 A log transformation of both psa and cancerv was found to generate a normal distribution of the residuals and also removed the problems with homoscedacity.
 
@@ -309,7 +451,6 @@ The p.values for shapiro wilks test and non-constant variance tests allow accept
 ```{r log.cancerv.dist, echo=FALSE, include=TRUE, fig.cap="cancer volume distribution after a log log transformation",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 
 par(mfrow=c(1,2))
-summary(lm.cancerv.log)
 plot(y=log(data2$psa),x=log(data2$cancerv), 
      xlab="log(PSA)", 
      ylab="log(Cancer Volume)", 
@@ -331,31 +472,55 @@ t<- data.frame(a=c(swp),b=c(ncvp))
 knitr::kable(t,col.names =c("Shapiro-wilks p-value","ncv test p-value"),label="tab:tab4",caption = "Shapiro-wilks and ncv test")
 ```
 
-\section{Compare Covariates}
+\section{Covariate Selection}
 
-```{r echo=FALSE, results = 'asis'}
+Examination of the p-values and adjusted $R^{2}$ for the individual regression models indicated several potential covariates were not statistically significant and and did not show an acceptable linear relationship.  Based on the regression p-values and adjusted $R^{2}$, \textbf{HYP}, \textbf{AGE}, and \textbf{WT} were excluded from further consideration
+
+The categorical variable \textbf{SCORE} did not have a significant p-value for values of 6 and 7, but score 8 was statistically. 
+
+```{r tab.covariate.sel, echo=FALSE, results = 'asis'}
 b <- regsubsets(log(psa) ~ log(cancerv)+seminal+capsular+score, data = data2)
-rs <- summary(b)
-t <- data.frame(with(rs, cbind(which, rss, adjr2, cp, bic)), digits = 4) 
-colnames(t) <- c("Intercept","Cancer Vol","Seminal","Capsular","Score8","RSS","AdjR2","cp","BIC")
-knitr::kable(t[,2:9])
+regsub <- summary(b)
+regsubdf <- data.frame(regsub$which)
+regsubdf <- with(regsub, cbind(which, rss, adjr2, cp, bic))
+colnames(regsubdf) <- c("Intercept","VOL","SEM (presence)","CAP","SCORE (7)","SCORE (8)","RSS","Adj R2","cp","bic")
+
+kable(regsubdf, digits = 4, label = "tab.covariate.sel")
+
+
+
 ```
 
-\section{test variables} 
+The output of automatic covariate selection in table \ref{tab.covariate.sel} agreed with the analysis of \textbf{SCORE}, indicating only a value of 8 was significant 
 
-Based on cp, bic and $R^{2}$ results, analysis will be focused on the following 3 covariates: 
+Based on the lowest BIC, cp and the highest $R^{2}$, the following 3 covariates were selected for the final model: 
 
 \begin{itemize}
-  \item Cancer Volume
-  \item Gleason Score
-  \item Seminal Vesicle Invasion
+  \item \textbf{VOL}
+  \item \textbf{SCORE for value=8}
+  \item \textbf{SEM}
 \end{itemize}
 
 test for linearity and variance for each variable
-\ subsection{regression models}
-
+\subsection{regression models}
 
 ```{r}
+lm.multi <- lm(data=data2, log(psa) ~ log(cancerv) + score + seminal)
+lm.multi.summary <- summary(lm.multi)
 
 ```
+
+
+```{r echo=FALSE}
+gi <- influence(lm.multi)
+par(mfrow=c(1,2))
+
+halfnorm(cooks.distance(lm.multi), cex = 1.5, las=1)
+influencePlot(lm.multi, id = list(n = 3))
+```
+
+
+```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
+
 
