@@ -270,6 +270,7 @@ grid.arrange(ncol = 2, p5)
 ```
 
 Figure \ref{fig:dist.cat} shows the distribution of the of Score and Seminal factors
+
 ```{r  fig.dist.cat, include=TRUE, fig.cap="distribution of factor variables",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 par(mfrow = c(1,2))
 tab.sem <- tab1(data2$seminal, main = "Distribution of Seminal")
