@@ -118,12 +118,10 @@ Put all your introduction about the study topic here and cite some references. F
 
 \subsection{Primary Analysis Objectives}
 
-Determine the association between \textit{ Serum Prostate-specific antigen level (mg/ml) \textbf{(PSA)}} and other clinical measurements in men with advanced prostate cancer
-
-\subsection{Secondary Analysis Objectives}
-
 https://www.cancer.gov/types/prostate/psa-fact-sheet
-Elevated levels of the protein Prostate-specific antigen (PSA) is an FDA approved test to monitor the progression of prostate cancer  
+Elevated levels of the protein Prostate-specific antigen (PSA) is an FDA approved test to monitor the progression of prostate cancer.  
+
+The objective of the study is to evaluate the association between \textit{ Serum Prostate-specific antigen level (mg/ml) \textbf{(PSA)}} and other clinical measurements in men with advanced prostate cancer
 
 \section{Materials and Methods}
 \subsection{Data Sources}
@@ -182,6 +180,7 @@ dataraw <- read_xlsx("../823data/pcancer.xlsx")
 #create a new data frame and create factors for 
 #categorical
 data2 <- data.frame(dataraw)
+
 data2$seminal <- factor(dataraw$seminal)
 levels(data2$seminal) <- c("absence", "presence")
 data2$score <- factor(dataraw$score)
@@ -209,55 +208,76 @@ Correlation coefficients in Figure \ref{fig:fig.corr} indicate the best relation
 
 The correlation between \textit{weight}, \textit{hyperplasia} and \textit{age} are much weaker. 
 
-```{r, fig.corr, include=TRUE, message=FALSE, warning=TRUE, fig.cap="Correlation of available continuous covariates", fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+Figure \ref{fig:fig.dist.box} plots the distribution for all continuous variables being considered as potential covariates.  
+
+\subsection{Correlation}
+
+```{r, fig.corr, include=TRUE, message=FALSE, warning=FALSE, fig.cap="Correlation of available continuous covariates", fig.pos="H", fig.align='center', out.width="0.8\\linewidth"}
 library(psych)
 library(GGally)
 #pairs.panels(data2[c(2:6,8)])
 
-ggpairs(data2[c(2:6,8)],ggplot2::aes())
+ggpairs(data2[c(2:6,8)])
 ```
 
-Figure \ref{fig:fig.dist.box} plots the distribution for all continuous variables being considered as potential covariates.  
 
 \begin{itemize}
-  \item \textbf{VOL} comments
-  \item \textbf{CAP} comments
-  \item \textbf{HYP} comments
-  \item \textbf{WT}  Indicates two observations that should be examined as potential outliers 
-  \item \textbf{AGE} comments
+  \item \textbf{VOL} The plot indicates the distribution may not have a normal distribution and shows two potential outliers should be checked.
+  \item \textbf{CAP} The values of zero shown in the plot are assumed to be valid observations and not missing values.
+  \item \textbf{HYP} The values of zero shown in the plot are assumed to be valid observations and not missing values.
+  \item \textbf{WT}  The plot indicates two observations that should be examined as potential outliers. The plot shows two potential outliers
+  \item \textbf{AGE} The plot indicates the distribution may be close to normal and does not show outliers
 \end{itemize}
 
+\subsection{Distributions}
+
 ```{r, fig.dist.box, include=TRUE, fig.cap="Distribution of variables",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+
+dist.box.theme <-theme(plot.title = element_text(color="blue",
+        size=10,
+        face="bold",
+        hjust = 0.5),
+        axis.text.x = element_blank(),
+        axis.ticks.x=element_blank(),
+        panel.background = element_rect(fill = "white",
+          colour = "blue",
+          size = 1, 
+          linetype = "solid"),
+        panel.grid.major = element_line(size = 0.2, 
+          linetype = 'solid',
+          colour = "lightgrey"))
+
 p1 <- ggplot(data2, aes(y=cancerv,x=1)) + 
-  geom_boxplot() + 
+  geom_boxplot(outlier.color = "red") +
+  geom_point(color="blue", size=1, position=position_jitter(0.05)) + 
   ggtitle("(a) vol") + 
-  labs(x="") + 
-  geom_jitter(position=position_jitter(0.05)) + 
-  theme(plot.title = element_text(color="blue", size=10, face="bold.italic"))
+  labs(x="")  + 
+  dist.box.theme 
+  
 
 p2 <- ggplot(data2, aes(y=capsular,x=1)) + 
-  geom_boxplot() + 
+  geom_boxplot(outlier.color = "red") +
+  geom_point(color="blue", size=1, position=position_jitter(0.05)) + 
   ggtitle("(b) CAP") + 
-  labs(x="") + 
-  geom_jitter(position=position_jitter(0.05))
-
+  labs(x="")  + dist.box.theme
+  
 p3 <- ggplot(data2, aes(y=hyperplasia,x=1)) + 
-  geom_boxplot() + 
+  geom_boxplot(outlier.color = "red") +
+  geom_point(color="blue", size=1, position=position_jitter(0.05)) + 
   ggtitle("(c) HYP") + 
-  labs(x="") + 
-  geom_jitter(position=position_jitter(0.05))
+  labs(x="") + dist.box.theme
 
 p4 <- ggplot(data2, aes(y=weight,x=1)) + 
-  geom_boxplot() + 
+  geom_boxplot(outlier.color = "red") +
+  geom_point(color="blue", size=1, position=position_jitter(0.05)) + 
   ggtitle("(d) WT") + 
-  labs(x="") + 
-  geom_jitter(position=position_jitter(0.05))
+  labs(x="") + dist.box.theme
 
 p5 <- ggplot(data2, aes(y=age,x=1)) + 
-  geom_boxplot() + 
+  geom_boxplot(outlier.color = "red") +
+  geom_point(color="blue", size=1, position=position_jitter(0.05)) + 
   ggtitle("(e) AGE") + 
-  labs(x="") + 
-  geom_jitter(position=position_jitter(0.05))
+  labs(x="") + dist.box.theme 
 
 grid.arrange(ncol = 2, p1,p2)
 grid.arrange(ncol = 2, p3,p4)
@@ -269,12 +289,12 @@ grid.arrange(ncol = 2, p5)
 
 ```
 
-Figure \ref{fig:dist.cat} shows the distribution of the of Score and Seminal factors
+Figure \ref{fig:dist.cat} shows the distribution of the of SCORE and SEM factors
 
 ```{r  fig.dist.cat, include=TRUE, fig.cap="distribution of factor variables",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 par(mfrow = c(1,2))
-tab.sem <- tab1(data2$seminal, main = "Distribution of Seminal")
-tab.score <- tab1(data2$score, main="Distribution of Score")
+tab.sem <- tab1(data2$seminal, main = "Distribution of SEM")
+tab.score <- tab1(data2$score, main="Distribution of SCORE")
 ```
 
 ```{r tab.sem.freq}
@@ -285,43 +305,63 @@ kable(tab.sem$output.table, caption = "SEM frequence plot")
 kable(tab.score$output.table, caption = "SCORE frequence plot")
 ```
 
+Figure \ref{fig:fig.hist.cov} indicates the \textbf{VOL}, \textbf{HYP} amd \textbf{CAP} my not have normal distributions.  
 
-```{r fig.dist.cov.hist, echo=FALSE, message=FALSE, warning=TRUE, fig.cap="Histogram of cancerv, capsular and hyperplasia"}
-#par(mfrow=c(2,2))
+```{r fig.hist.cov, echo=FALSE, message=FALSE, warning=TRUE, fig.cap="Histogram of cancerv, capsular and hyperplasia"}
+hist.cov.theme <-theme(plot.title = element_text(color="blue",
+        size=10,
+        face="bold",
+        hjust = 0.5),
+        axis.text.x = element_blank(),
+        axis.ticks.x=element_blank(),
+        panel.background = element_rect(fill = "white",
+          colour = "blue",
+          size = 1, 
+          linetype = "solid"),
+        panel.grid.major = element_line(size = 0.2, 
+          linetype = 'solid',
+          colour = "lightgrey"))
+
 p1 <- ggplot(data2, aes(x=cancerv)) +
   xlab("VOL") + 
-  geom_histogram(binwidth = 2)
+  ggtitle("(a) VOL Histogram") +
+  geom_histogram(binwidth = 2) + 
+  hist.cov.theme
 
 p2 <- ggplot(data2, aes(x=hyperplasia)) + 
   xlab("HYP") + 
-  geom_histogram(binwidth = 1)
+  ggtitle("(b) HYP Histogream") +
+  geom_histogram(binwidth = 1)+ 
+  hist.cov.theme
 
 p3 <- ggplot(data2, aes(x=capsular)) +
   xlab("CAP") + 
-  geom_histogram(binwidth = 0.5)
+  ggtitle("(c) CAP Histogram") +
+  geom_histogram(binwidth = 0.5)+ 
+  hist.cov.theme
 
 p4 <- ggplot(data2, aes(x=age)) + 
   xlab("AGE") + 
-  geom_histogram(binwidth = 01)
+  ggtitle("(d) AGE Histogram") +
+  geom_histogram(binwidth = 01)+ 
+  hist.cov.theme
 
 p5 <- ggplot(data2, aes(x=weight)) + 
-  xlab("WT") + 
-  geom_histogram(binwidth = 0.8)
+  xlab("WT") +
+  ggtitle("(e) WT Histogram") +
+  geom_histogram(binwidth = 0.8)+ 
+  hist.cov.theme
 
-grid.arrange(ncol = 2, p1,p2,p3,p4,p5)
-```
-
-Figure \ref{fig.dist.cov.hist} shows the skewness of the three potential covariates, indicating the data may not be normally distributed and problems with non constant variance may exist. 
-
-The plots also suggest both \textbf{HYP} and \textbf{CAP} cantain many values of zero
-
-```{r}
-
+grid.arrange(ncol = 2, p1,p2)
+grid.arrange(ncol = 2, p3,p4)
+grid.arrange(ncol = 2,p5)
 ```
 
 
+\subsection{Fitted Models}
 
-```{r, tab.stat.summary, echo=FALSE}
+
+```{r, tab.stat.summary, message=FALSE, warning=FALSE, echo=FALSE}
 lm.cancerv <- lm(data = data2, psa ~ cancerv)
 lm.cancerv.log <- lm(data = data2, log(psa) ~ log(cancerv))
 lm.hyperplasia <- lm(data = data2, psa ~ hyperplasia)
@@ -570,7 +610,11 @@ Based on the lowest BIC, cp and the highest $R^{2}$, the following 3 covariates 
 $Y$ = $\beta_{0} + \beta_{1}VOL + \beta_{2}SCORE_{score=8} + \beta_{3}SEM_{presence}$ 
 
 test for linearity and variance for each variable
-\subsection{regression models}
+\section{final model}
+
+\subsection{summary statistics}
+
+\ref{tab.lm.summary} indicates \textbf{VOL}, \textbf{$sCORE_{score=8}$} and \textbf{$SEM_{presence}$} are all statistically significant.
 
 ```{r tab.lm.summary, message=FALSE}
 lm.multi <- lm(data=data2, log(psa) ~ log(cancerv) + score + seminal)
@@ -582,6 +626,11 @@ tbl_regression(lm.multi)
 
 ```
 
+\subsection{goodness-of-fit}
+
+
+The adjusted $R^{2}$ value in table \ref{tab.summ.stat} indicates a moderate linear relationship
+
 ```{r tab.summ.stat}
 mse.multi <- mean(residuals(lm.multi)^2)
 radj.multi <- summary(lm.multi)$adj.r.squared
@@ -591,6 +640,7 @@ row.names(multi.summary.df) <- c("MSE","Adjusted R2")
 kable(multi.summary.df,caption="Model Summary Statistics",label = "tab.summ.stat")
 ```
 
+\subsection{influence}
 
 ```{r, tab.hat}
 lm.multi.influence <- influence(lm.multi)
@@ -627,6 +677,7 @@ plot(lm.multi.influence$coef[,4], main="SCORE Influence")
 plot(lm.multi.influence$coef[,5], main="SEM Influence")
 ```
  
+\subsection{residuals}
 
 ```{r fig.resid.vs.fitted, include=TRUE, fig.cap="fitted vs residuals",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 #par(mfrow = c(1, 2))
