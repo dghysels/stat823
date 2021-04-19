@@ -1,6 +1,6 @@
 ---
 biblio-style: jabes
-bibliography: lazbibreg.bib
+bibliography: final.project.bib
 documentclass: report
 fontsize: 12pt
 header-includes: \usepackage{mdwlist} \usepackage[compact]{titlesec} \usepackage{titling}
@@ -114,30 +114,22 @@ Put your abstract here
 \newpage
 
 \section{Introduction}
-Put all your introduction about the study topic here and cite some references. For example,  The textbook ``\textbf{Design and Analysis of Experiments}'' by \citet{voss} is required. Additional materials that you may wish to consult include \citet{casella}, \citet{kuehl} and \citet{shalabh}.
 
-\subsection{Primary Analysis Objectives}
-
-https://www.cancer.gov/types/prostate/psa-fact-sheet
-Elevated levels of the protein Prostate-specific antigen (PSA) is an FDA approved test to monitor the progression of prostate cancer.  
-
-The objective of the study is to evaluate the association between \textit{ Serum Prostate-specific antigen level (mg/ml) \textbf{(PSA)}} and other clinical measurements in men with advanced prostate cancer
+Tracking the level of of the protein Prostate-specific antigen (PSA) in men diagnosed with prostate cancer is an an FDA approved method of tracking the disease (\citet{cit.nat.cancer.inst}). The objective of this study is to evaluate the association between \textit{ Serum Prostate-specific antigen level (mg/ml) \textbf{(PSA)}} and 7 clinical measurements in men with advanced prostate cancer.  The measurements inclue \textbf{Estimate of prostate cancer volume}, \textbf{Prostate weight}, \textbf{Age of patient}, \textbf{Amount of benign prostatic hyperplasia}, \textbf{Degree of capsular penetration}, \textbf{Seminal Vesical Invasion}, and the \textbf{Cleason Score}.
 
 \section{Materials and Methods}
-\subsection{Data Sources}
-The dataset was obtained from the project materials provided for the stat823 course. The data set was selected due to the teams interest in exploring a science related topic as well as the interesting data distributions.
 
-The data set includes 8 data variables.  The response vararible of interest is \textbf{Serum prostate-specific antigen level} and 7 clinical measures which inclue \textbf{Estimate of prostate cancer volume}, \textbf{Prostate weight}, \textbf{Age of patient}, \textbf{Amount of benign prostatic hyperplasia}, \textbf{Degree of capsular penetration}, \textbf{Seminal Vesical Invasion}, and the \textbf{Cleason Score}.
+The dataset was obtained from the project materials provided for the stat823 course. A summary of the dependent and independent variables available is presented in Table \ref{table:model.variables}
 
-\begin{table}
-\caption{Potential Model Covariates}
+\begin{table}[h]
+\caption{Available independent and dependent variables}
 \centering
 \begin{tabular}{c c c c}
 \hline
 Variable & Units & Abbreviation & Type \\ [0.5ex] % inserts table
 %heading
 \hline
-Serum prostate-specific antigen level & mg/ml & PSA & \textbf{Response} \\ % inserting body of the table
+Serum prostate-specific antigen level & mg/ml & PSA & Continuous \textbf{(Dependent)} \\ % inserting body of the table
 Estimate of prostate cancer volume & $cm^{3}$ & VOL & Continuous \\ 
 Prostate weight  & gm & WT & Continuous \\
 Age of patient & Years & AGE & Continuous \\
@@ -150,9 +142,10 @@ Cleason Score & na & SCORE & Categorical \\ [1ex] % [1ex] adds vertical space
 \label{table:model.variables}
 \end{table}
 
+
 \subsection{Statistical Analysis}
 
-Describe the statistical model or models used
+The data is analyzed using multiple linear regression.  
 
 \subsubsection{Model Assumptions}
 
@@ -161,10 +154,6 @@ All inferences are conducted using $\alpha = 0.05$ unless stated otherwise.  No 
 \subsubsection{Primary Objective Analysis}
 
 The primary objective analysis uses a Wilcoxon signed rank test to determine if there is a significant difference between cPRA scores at baseline and at week 16.  
-
-\subsubsection{Secondary Objective Analyses}
-
-Summary statistics are produced for baseline characteristics.  
 
 \subsubsection{Goodness of Fit Test}
 
@@ -194,6 +183,8 @@ Describe your results here. Add subheadings if necessary.
 
 \subsection{summary of statistics}
 
+The summary statistics for the Prostate Cancer data are presented in Table \ref{tab:tab.summary}.  The standard deviation for the variable \textbf{WT} indicates outliers may be a concern.
+
 ```{r tab.summary, message=FALSE, results='asis'}
 #create a table of summary statistics
 summ.table <- summ(data2[2:9])$table
@@ -204,13 +195,11 @@ xtable(summ.table,label="tab:tab.summary",caption = "Summary of statistics")
 
 \section{Analysis of Covariates}
 
-Correlation coefficients in Figure \ref{fig:fig.corr} indicate the best relationships are between \textit{psa} and \textit{capsular} and between \textit{psa} and \textit{cancer volume} 
+Correlation coefficients in Figure \ref{fig:fig.corr} indicate the best relationships are between \textit{PSA} and \textit{CAP} and between \textit{PSA} and \textit{VOL} 
 
-The correlation between \textit{weight}, \textit{hyperplasia} and \textit{age} are much weaker. 
+The correlation between \textit{WT}, \textit{HYP} and \textit{AGE} are much weaker, indicating these variables may not be suitable as model covariates 
 
-Figure \ref{fig:fig.dist.box} plots the distribution for all continuous variables being considered as potential covariates.  
-
-\subsection{Correlation}
+\subsection{Correlation Coefficients}
 
 ```{r, fig.corr, include=TRUE, message=FALSE, warning=FALSE, fig.cap="Correlation of available continuous covariates", fig.pos="H", fig.align='center', out.width="0.8\\linewidth"}
 library(psych)
@@ -220,18 +209,9 @@ library(GGally)
 ggpairs(data2[c(2:6,8)])
 ```
 
+\subsection{Data Distributions}
 
-\begin{itemize}
-  \item \textbf{VOL} The plot indicates the distribution may not have a normal distribution and shows two potential outliers should be checked.
-  \item \textbf{CAP} The values of zero shown in the plot are assumed to be valid observations and not missing values.
-  \item \textbf{HYP} The values of zero shown in the plot are assumed to be valid observations and not missing values.
-  \item \textbf{WT}  The plot indicates two observations that should be examined as potential outliers. The plot shows two potential outliers
-  \item \textbf{AGE} The plot indicates the distribution may be close to normal and does not show outliers
-\end{itemize}
-
-\subsection{Distributions}
-
-```{r, fig.dist.box, include=TRUE, fig.cap="Distribution of variables",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+```{r include=TRUE}
 
 dist.box.theme <-theme(plot.title = element_text(color="blue",
         size=10,
@@ -247,49 +227,114 @@ dist.box.theme <-theme(plot.title = element_text(color="blue",
           linetype = 'solid',
           colour = "lightgrey"))
 
-p1 <- ggplot(data2, aes(y=cancerv,x=1)) + 
+box1 <- ggplot(data2, aes(y=cancerv,x=1)) + 
   geom_boxplot(outlier.color = "red") +
   geom_point(color="blue", size=1, position=position_jitter(0.05)) + 
-  ggtitle("(a) vol") + 
-  labs(x="")  + 
+  labs(x="",y="VOL")  + 
   dist.box.theme 
   
-
-p2 <- ggplot(data2, aes(y=capsular,x=1)) + 
+box2 <- ggplot(data2, aes(y=capsular,x=1)) + 
   geom_boxplot(outlier.color = "red") +
   geom_point(color="blue", size=1, position=position_jitter(0.05)) + 
-  ggtitle("(b) CAP") + 
-  labs(x="")  + dist.box.theme
+  labs(x="",Y="CAP")  + dist.box.theme
   
-p3 <- ggplot(data2, aes(y=hyperplasia,x=1)) + 
+box3 <- ggplot(data2, aes(y=hyperplasia,x=1)) + 
   geom_boxplot(outlier.color = "red") +
   geom_point(color="blue", size=1, position=position_jitter(0.05)) + 
-  ggtitle("(c) HYP") + 
-  labs(x="") + dist.box.theme
+  labs(x="",y="HYP") + dist.box.theme
 
-p4 <- ggplot(data2, aes(y=weight,x=1)) + 
+box4 <- ggplot(data2, aes(y=weight,x=1)) + 
   geom_boxplot(outlier.color = "red") +
   geom_point(color="blue", size=1, position=position_jitter(0.05)) + 
-  ggtitle("(d) WT") + 
-  labs(x="") + dist.box.theme
+  labs(x="",y="WT") + dist.box.theme
 
-p5 <- ggplot(data2, aes(y=age,x=1)) + 
+box5 <- ggplot(data2, aes(y=age,x=1)) + 
   geom_boxplot(outlier.color = "red") +
   geom_point(color="blue", size=1, position=position_jitter(0.05)) + 
-  ggtitle("(e) AGE") + 
-  labs(x="") + dist.box.theme 
+  labs(x="",y="AGE") + dist.box.theme 
 
-grid.arrange(ncol = 2, p1,p2)
-grid.arrange(ncol = 2, p3,p4)
-grid.arrange(ncol = 2, p5)
+#---------- histogram-----------
+fig.dist.hist.theme <-theme(plot.title = element_text(color="blue",
+        size=10,
+        face="bold",
+        hjust = 0.5),
+        axis.text.x = element_blank(),
+        axis.ticks.x=element_blank(),
+        panel.background = element_rect(fill = "white",
+          colour = "blue",
+          size = 1, 
+          linetype = "solid"),
+        panel.grid.major = element_line(size = 0.2, 
+          linetype = 'solid',
+          colour = "lightgrey"))
+
+hist1 <- ggplot(data2, aes(x=cancerv)) +
+  xlab("VOL") + 
+  #ggtitle("(a) VOL Histogram") +
+  geom_histogram(binwidth = 2) + 
+  fig.dist.hist.theme
+
+
+hist2 <- ggplot(data2, aes(x=capsular)) +
+  xlab("CAP") + 
+  #ggtitle("(c) CAP Histogram") +
+  geom_histogram(binwidth = 0.5)+ 
+  fig.dist.hist.theme
+
+hist3 <- ggplot(data2, aes(x=hyperplasia)) + 
+  xlab("HYP") + 
+  #ggtitle("(b) HYP Histogream") +
+  geom_histogram(binwidth = 1)+ 
+  fig.dist.hist.theme
+
+hist4 <- ggplot(data2, aes(x=weight)) + 
+  xlab("WT") +
+  #ggtitle("(e) WT Histogram") +
+  geom_histogram(binwidth = 0.8)+ 
+  fig.dist.hist.theme
+
+hist5 <- ggplot(data2, aes(x=age)) + 
+  xlab("AGE") + 
+  #ggtitle("(d) AGE Histogram") +
+  geom_histogram(binwidth = 01)+ 
+  fig.dist.hist.theme
+
 ```
 
 
-```{r}
+Figure \ref{fig:fig.dist.VOL} through and Figure \ref{fig:fig.dist.AGE} summarize the variable distributions
 
+```{r fig.dist.VOL, include=TRUE, fig.cap="Distribution of VOL",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+grid.arrange(ncol = 2, box1,hist1)
 ```
 
-Figure \ref{fig:dist.cat} shows the distribution of the of SCORE and SEM factors
+```{r fig.dist.CAP, include=TRUE, fig.cap="Distribution of CAP",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+grid.arrange(ncol = 2, box2,hist2)
+```
+
+```{r fig.dist.HYP, include=TRUE, fig.cap="Distribution of HYP",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+grid.arrange(ncol = 2, box3,hist3)
+```
+
+```{r fig.dist.WT, include=TRUE, fig.cap="Distribution of WT",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+grid.arrange(ncol = 2, box4,hist4)
+```
+
+```{r fig.dist.AGE, include=TRUE, fig.cap="Distribution of AGE",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+grid.arrange(ncol = 2, box5,hist5)
+```
+
+
+\begin{itemize}
+  \item \textbf{VOL} The plots indicates the distribution may not have a normal distribution and shows two potential outliers should be checked.
+  \item \textbf{CAP} The values of zero shown in the plot are assumed to be valid observations and not missing values.
+  \item \textbf{HYP} The values of zero shown in the plot are assumed to be valid observations and not missing values.
+  \item \textbf{WT}  The plot indicates two observations that should be examined as potential outliers. The plot shows two potential outliers
+  \item \textbf{AGE} The plot indicates the distribution may be close to normal and does not show outliers
+\end{itemize}
+
+
+Figure \ref{fig:fig.dist.cat} shows the distribution of the of SCORE and SEM factors
 
 ```{r  fig.dist.cat, include=TRUE, fig.cap="distribution of factor variables",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 par(mfrow = c(1,2))
@@ -305,63 +350,11 @@ kable(tab.sem$output.table, caption = "SEM frequence plot")
 kable(tab.score$output.table, caption = "SCORE frequence plot")
 ```
 
-Figure \ref{fig:fig.hist.cov} indicates the \textbf{VOL}, \textbf{HYP} amd \textbf{CAP} my not have normal distributions.  
-
-```{r fig.hist.cov, echo=FALSE, message=FALSE, warning=TRUE, fig.cap="Histogram of cancerv, capsular and hyperplasia"}
-hist.cov.theme <-theme(plot.title = element_text(color="blue",
-        size=10,
-        face="bold",
-        hjust = 0.5),
-        axis.text.x = element_blank(),
-        axis.ticks.x=element_blank(),
-        panel.background = element_rect(fill = "white",
-          colour = "blue",
-          size = 1, 
-          linetype = "solid"),
-        panel.grid.major = element_line(size = 0.2, 
-          linetype = 'solid',
-          colour = "lightgrey"))
-
-p1 <- ggplot(data2, aes(x=cancerv)) +
-  xlab("VOL") + 
-  ggtitle("(a) VOL Histogram") +
-  geom_histogram(binwidth = 2) + 
-  hist.cov.theme
-
-p2 <- ggplot(data2, aes(x=hyperplasia)) + 
-  xlab("HYP") + 
-  ggtitle("(b) HYP Histogream") +
-  geom_histogram(binwidth = 1)+ 
-  hist.cov.theme
-
-p3 <- ggplot(data2, aes(x=capsular)) +
-  xlab("CAP") + 
-  ggtitle("(c) CAP Histogram") +
-  geom_histogram(binwidth = 0.5)+ 
-  hist.cov.theme
-
-p4 <- ggplot(data2, aes(x=age)) + 
-  xlab("AGE") + 
-  ggtitle("(d) AGE Histogram") +
-  geom_histogram(binwidth = 01)+ 
-  hist.cov.theme
-
-p5 <- ggplot(data2, aes(x=weight)) + 
-  xlab("WT") +
-  ggtitle("(e) WT Histogram") +
-  geom_histogram(binwidth = 0.8)+ 
-  hist.cov.theme
-
-grid.arrange(ncol = 2, p1,p2)
-grid.arrange(ncol = 2, p3,p4)
-grid.arrange(ncol = 2,p5)
-```
-
 
 \subsection{Fitted Models}
 
 
-```{r, tab.stat.summary, message=FALSE, warning=FALSE, echo=FALSE}
+```{r, tab.fitted.summary, message=FALSE, warning=FALSE, echo=FALSE}
 lm.cancerv <- lm(data = data2, psa ~ cancerv)
 lm.cancerv.log <- lm(data = data2, log(psa) ~ log(cancerv))
 lm.hyperplasia <- lm(data = data2, psa ~ hyperplasia)
@@ -418,13 +411,12 @@ for(i in 1:ncol(summarydf)){
                                                     })
 }
 
-knitr::kable(summarydf,label = "tab.stat.summary")
+knitr::kable(summarydf,label = "tab.fitted.summary", caption = "Goodness-of-fit")
                         
 ```
 
-\subsection{CAP}
 
-```{r fig.CAP.dist, fig.cap="Visualize CAP distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+```{r fig.CAP.fitted, fig.cap="CAP Fitted Model", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 
 par(mfrow=c(1,2),mar=c(5,4,4,3))
 plot(y=data2$psa,x=data2$capsular, 
@@ -444,11 +436,10 @@ abline(h = 0,col="forestgreen")
 box("outer")
 ```
 
-the fitted line in Figure \ref{fig.CAP.dist} indicates a poor linear relationship between PSA and Capsular.  The figure also shows indications the residuals will not support the non constant variance assumptions required for inference
+the fitted line in Figure \ref{fig:fig.CAP.fitted} indicates a poor linear relationship between PSA and Capsular.  The figure also shows indications the residuals will not support the non constant variance assumptions required for inference
 
-\subsection{VOL}
 
-```{r fig.VOL.dist, fig.cap="Visualize VOL distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+```{r fig.VOL.fitted, fig.cap="VOL Fitted Model", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 par(mfrow=c(1,2),mar=c(5,4,4,3))
 plot(y=data2$psa,x=data2$cancerv, 
      xlab="PSA", 
@@ -468,12 +459,10 @@ box("outer")
 
 ```
 
-Figure \ref{fig.VOL.dist} Shows very clear evidence of distribution problems.  The non constant variance test and shapiro-wilks test both indicate the data violates the assumption of constant variance and normal distribution
-
-\subsection{WT}
+Figure \ref{fit:fig.VOL.dist} Shows very clear evidence of distribution problems.  The non constant variance test and shapiro-wilks test both indicate the data violates the assumption of constant variance and normal distribution}
 
 
-```{r fig.WT.dist, fig.cap="Visualize WT distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+```{r fig.WT.fitted, fig.cap="WT Fitted Model", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 par(mfrow=c(1,2),mar=c(5,4,4,3))
 plot(y=data2$psa,x=data2$weight, 
      xlab="PSA", 
@@ -493,9 +482,8 @@ box("outer")
 
 ```
 
-\subsection{AGE}
 
-```{r fig.AGE.dist, fig.cap="Visualize AGE distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+```{r fig.AGE.fitted, fig.cap="AGE Fitted Model", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 par(mfrow=c(1,2))
 plot(y=data2$psa,x=data2$age, 
      xlab="PSA", 
@@ -511,9 +499,8 @@ abline(h = 0)
 
 ```
 
-\subsection{HYP}
 
-```{r, HYP.dist, echo=FALSE, fig.cap="Visualize AGE distribution", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+```{r, HYP.fitted, echo=FALSE, fig.cap="HYP Fitted Model", message=FALSE,fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 par(mfrow=c(1,2))
 plot(y=data2$psa,x=data2$age, 
      xlab="PSA", 
@@ -543,7 +530,7 @@ The regression plot and plot of the residuals vs. the fitted variables both indi
 
 The p.values for shapiro wilks test and non-constant variance tests allow acceptance of the null hypothesis 
 
-```{r log.cancerv.dist, echo=FALSE, include=TRUE, fig.cap="cancer volume distribution after a log log transformation",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+```{r log.VOL.fitted, echo=FALSE, include=TRUE, fig.cap="VOL Fitted AFter Log Transformation",fig.pos="H", fig.align='center', out.width="0.8\\linewidth"}
 
 par(mfrow=c(2,2))
 plot(y=log(data2$psa),x=log(data2$cancerv), 
@@ -558,46 +545,69 @@ plot(fitted(lm.cancerv.log),residuals(lm.cancerv.log),
      ylab="fitted",
      main = "Log(VOL)\n fitted vs residuals")
 abline(h = 0)
+```
 
+```{r log.VOL.QQ, echo=FALSE, include=TRUE, fig.cap="VOL QQ Plot AFter Log Transformation",fig.pos="H", fig.align='center', out.width="0.8\\linewidth"}
 qqnorm(residuals(lm.cancerv.log), main = "QQ Plot of log(VOL)")
 qqline(residuals(lm.cancerv.log))
 ```
 
-```{r tab4, echo=FALSE, include=TRUE, message=TRUE}
+```{r tab4, echo=FALSE, include=TRUE, message=TRUE, results = 'asis'}
 ncvp <-ncvTest(lm.cancerv.log)$p
 swp <- shapiro.test(residuals(lm.cancerv.log))$p.value
 cancerv.log.normdf <- data.frame(c(swp, ncvp))
 row.names(cancerv.log.normdf) <- c("Shapiro-wilks p-value","ncv test p-value")
 colnames(cancerv.log.normdf) <- c("values")
-knitr::kable(cancerv.log.normdf,label="tab:tab4",caption = "Shapiro-wilks and ncv test")
+xtable(cancerv.log.normdf,label="tab:tab4",caption = "Shapiro-wilks and ncv test")
 ```
 
 \section{Covariate Selection}
 
-Examination of the p-values and adjusted $R^{2}$ for the individual regression models indicated several potential covariates were not statistically significant and and did not show an acceptable linear relationship.  Based on the regression p-values and adjusted $R^{2}$, \textbf{HYP}, \textbf{AGE}, and \textbf{WT} were excluded from further consideration
+Examination of the p-values of the individual regression models in Table \ref{tab.fitted.summary} indicated \textbf{HYP}, \textbf{AGE}, and \textbf{WT} were not statistically significant.  The adjusted $R^{2}$ also indicated these variables did not have a strong linear relationship with \textbf{PSA},  \textbf{SCORE} was only statistically significant for \textbf{$SCORE_{=8}$}. \textbf{$SCORE_{=6}$} and \textbf{$SCORE_{=7}$} were not statistically significant. 
 
-The categorical variable \textbf{SCORE} did not have a significant p-value for values of 6 and 7, but score 8 was statistically. 
-
-```{r tab.covariate.sel, echo=FALSE, results = 'asis'}
+```{r tab.covariate.sel, results = 'asis'}
 
 b <- regsubsets(log(psa) ~ log(cancerv)+seminal+capsular+score, data = data2)
 regsub <- summary(b)
-regsubdf <- data.frame(regsub$which,regsub$rss, regsub$adjr2, regsub$cp, regsub$bic)
-#regsubdf <- with(regsub, cbind(which, rss, adjr2, cp, bic))
-colnames(regsubdf) <- c("Intercept","VOL","SEM (presence)","CAP","SCORE (7)","SCORE (8)","RSS","Adj R2","cp","bic")
+regsubdf <- data.frame(regsub$which)
+#Assign columns names so we can look for each TRUE and buld a nice label
+#Note: these column names are also used in the loop below.  
+colnames(regsubdf) <- c("Intercept","VOL","SEM","CAP","SCORE7","SCORE8")
 
-res.sum <- summary(b)
-data.frame(
-  Adj.R2 = which.max(res.sum$adjr2),
-  CP = which.min(res.sum$cp),
-  BIC = which.min(res.sum$bic)
-)
+#dynamically build a label for the variables
+#marked as TRUE to build the nice label
+rowlabels <- vector(length = nrow(regsubdf))
+for(i in 1:nrow(regsubdf)){
+  r <- regsubdf[i,]
+  lbl <- vector()
+  if (regsubdf[i,"VOL"] == TRUE){
+    lbl <-append(lbl, "VOL")
+  }
+  if (regsubdf[i,"CAP"] == TRUE){
+    lbl <- append(lbl, "CAP")
+  }
+  if (regsubdf[i,"SEM"] == TRUE){
+    lbl <- append(lbl, "SEM")
+  }
+  if (regsubdf[i,"SCORE7"] == TRUE){
+    lbl <- append(lbl, "SCORE(7)")
+  }
+  if (regsubdf[i,"SCORE8"] == TRUE){
+    lbl <- append(lbl, "SCORE(8)")
+  }
+  rowlabels[i] <- paste(lbl,collapse="+")
+  
+}
 
-kable(regsubdf, digits = 4, label = "tab.covariate.sel")
+#build a new data frame using the row labels
+regsubdf <- data.frame(rowlabels,"RSS" = regsub$rss, 
+                       "AdjR2"=regsub$adjr2, 
+                       "cp"=regsub$cp, 
+                       "bic"=regsub$bic)
+regsubdf[,2:5] <- round(regsubdf[,2:5],3)
+xtable(regsubdf, digits = 2, label = "tab.covariate.sel")
 
 ```
-
-The output of automatic covariate selection in table \ref{tab.covariate.sel} agreed with the analysis of \textbf{SCORE}, indicating only a value of 8 was significant 
 
 Based on the lowest BIC, cp and the highest $R^{2}$, the following 3 covariates were selected for the final model: 
 
@@ -607,42 +617,50 @@ Based on the lowest BIC, cp and the highest $R^{2}$, the following 3 covariates 
   \item \textbf{SEM}
 \end{itemize}
 
-$Y$ = $\beta_{0} + \beta_{1}VOL + \beta_{2}SCORE_{score=8} + \beta_{3}SEM_{presence}$ 
 
 test for linearity and variance for each variable
 \section{final model}
 
 \subsection{summary statistics}
 
-\ref{tab.lm.summary} indicates \textbf{VOL}, \textbf{$sCORE_{score=8}$} and \textbf{$SEM_{presence}$} are all statistically significant.
+\ref{tab:tab.lm.summary} indicates \textbf{VOL}, \textbf{$SCORE_{score=8}$} and \textbf{$SEM_{presence}$} are all statistically significant.
 
-```{r tab.lm.summary, message=FALSE}
+```{r tab.lm.summary,warning=FALSE, message=FALSE}
 lm.multi <- lm(data=data2, log(psa) ~ log(cancerv) + score + seminal)
-
+lm.multi.summary <- summary(lm.multi)
 require(gtsummary)
 library(gtsummary)
 
 tbl_regression(lm.multi)
-
 ```
+
+The response formula is as follows
+$log(Y)$ = $\beta_{0} + \beta_{1}log(VOL) + \beta_{2}SCORE_{score=7} + + \beta_{3}SCORE_{score=8} +\beta_{4}SEM_{presence}$ 
+
+where:  
+$\beta_{0}$ = `r lm.multi.summary$coefficients["(Intercept)",1]`  
+$\beta_{1}$ = `r lm.multi.summary$coefficients["log(cancerv)",1]`  
+$\beta_{2}$ = `r lm.multi.summary$coefficients["score7",1]`  
+$\beta_{3}$ = `r lm.multi.summary$coefficients["score8",1]`  
+$\beta_{4}$ = `r lm.multi.summary$coefficients["seminalpresence",1]`  
 
 \subsection{goodness-of-fit}
 
 
 The adjusted $R^{2}$ value in table \ref{tab.summ.stat} indicates a moderate linear relationship
 
-```{r tab.summ.stat}
+```{r tab.summ.stat, results = 'asis'}
 mse.multi <- mean(residuals(lm.multi)^2)
 radj.multi <- summary(lm.multi)$adj.r.squared
 
 multi.summary.df <- data.frame("Values"=c(mse.multi,radj.multi))
 row.names(multi.summary.df) <- c("MSE","Adjusted R2")
-kable(multi.summary.df,caption="Model Summary Statistics",label = "tab.summ.stat")
+xtable(multi.summary.df,caption="Model Summary Statistics",label = "tab.summ.stat")
 ```
 
 \subsection{influence}
 
-```{r, tab.hat}
+```{r, tab.hat, results = 'asis'}
 lm.multi.influence <- influence(lm.multi)
 kable(head(sort(lm.multi.influence$hat,decreasing=TRUE),6), 
       col.names = c("Hat Influence"), caption = "Influence, top Hat values")
