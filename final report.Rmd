@@ -1,6 +1,6 @@
 ---
 biblio-style: jabes
-bibliography: final.project.bib
+bibliography: projectbib.bib
 documentclass: report
 fontsize: 12pt
 header-includes: \usepackage{mdwlist} \usepackage[compact]{titlesec} \usepackage{titling}
@@ -534,9 +534,9 @@ ncvp <-ncvTest(lm.cancerv)$p
 swp <- shapiro.test(residuals(lm.cancerv))$p.value
 ```
 
-\textbf{VOL} fitted and residuals plots in figure \ref{fig.VOL.fitted} indicate the observations do not have a normal distribution.  
+\textbf{VOL} fitted and residuals plots indicate the observations do not have a normal distribution.  
 
-The non constant variance test and shapiro-wilks are used to determine if \textbf{VOL} violates the assumption of constant variance and normal distribution.  The test both indicate a problem with the distribution of the residuals.  The Shapiro-wilks p-value is `r swp` and the non-constant variance test p-value is `r ncvp`.  The p-values indicate the residuals are not normally distributed and the non-constant varaiance assumptions must be rejected. 
+The non constant variance test and shapiro-wilks are used to determine if \textbf{VOL} violates the assumption of constant variance and normal distribution.  The tests both indicate a problem with the distribution of the residuals.  The Shapiro-wilks p-value is `r swp` and the non-constant variance test p-value is `r ncvp`.  The p-values indicate the residuals are not normally distributed and the non-constant varaiance assumptions must be rejected. 
 
 A log transformation of both psa and cancerv was found to generate a normal distribution of the residuals and also removed the problems with homoscedacity. The regression model for VOL is expressed as $log(PSA)=\beta_{0} + \beta_{1}log(VOL)$
 
@@ -662,6 +662,12 @@ The summary statistics for the multiple regression model indicate \textbf{VOL}, 
 ```{r tab.lm.summary,warning=FALSE, message=FALSE}
 lm.multi <- lm(data=data2, log(psa) ~ log(cancerv) + score + seminal)
 lm.multi.summary <- summary(lm.multi)
+lm.coeff <- c(lm.multi.summary$coefficients["(Intercept)",1],  
+  lm.multi.summary$coefficients["log(cancerv)",1],
+  lm.multi.summary$coefficients["score7",1],
+  lm.multi.summary$coefficients["score8",1],  
+  lm.multi.summary$coefficients["seminalpresence",1],
+  lm.multi.summary$adj.r.squared)
 require(gtsummary)
 library(gtsummary)
 
@@ -669,7 +675,7 @@ tbl_regression(lm.multi)
 ```
 
 The response formula is as follows
-$log(Y)$ = $\beta_{0} + \beta_{1}log(VOL) + \beta_{2}SCORE_{score=7} + + \beta_{3}SCORE_{score=8} +\beta_{4}SEM_{presence}$ 
+$log(VOL)$ = $\beta_{0} + \beta_{1}log(VOL) + \beta_{2}SCORE_{score=7} + + \beta_{3}SCORE_{score=8} +\beta_{4}SEM_{presence}$ 
 
 \begin{itemize}
   \item 
@@ -700,6 +706,8 @@ xtable(multi.summary.df,caption="Model Summary Statistics",label = "tab.summ.sta
 
 \subsection{influence}
 
+The largest Hat values are used to determine the observations that may have the greatest influence.  Observations 76 and 91 are 20% larger than the next largest values and their influence on the regression slope ($\beta$) may be an issue
+
 ```{r, tab.hat, results = 'asis'}
 lm.multi.influence <- influence(lm.multi)
 kable(head(sort(lm.multi.influence$hat,decreasing=TRUE),6), 
@@ -712,6 +720,7 @@ The hat values shown in \ref{tab.hat} shows observations 76 and 91 have the larg
 multi.influence.tab <-influencePlot(lm.multi, id = list(n = 3))
 
 ```
+The cooks distance values do not confirm any issues exist for observations 91 and 76
 
 ```{r, tab.cooksd}
 kable(multi.influence.tab[order(multi.influence.tab$CookD, decreasing = TRUE),c(1,3)],caption = "Top Cooks Distance")
@@ -726,16 +735,35 @@ qqnorm(lm.multi.influence$coef[,4],main="SEM Influence")
 
 
 
-The cooks distance calculations in \ref{fig.cooksd} do not indicate these observations will cause a large change in the final model if observations 76 and 91 were removed.  
+The cooks distance calculations in \ref{fig.cooksd} do not indicate these observations will cause a large change in the final model if observations 76 and 91 were removed. 
 
-```{r}
-par(mfrow=c(2,2))
-plot(lm.multi.influence$coef[,2],main="VOL Influence")
-plot(lm.multi.influence$coef[,4], main="SCORE Influence")
-plot(lm.multi.influence$coef[,5], main="SEM Influence")
+Removing observations 91 and 76 from the model (\textbf{model 2}) results in only small changes to adjusted $R^{2}$ and the $\beta$ coefficients in small when compared to \textbf{model 1} 
+
+```{r tab.model.comp, results='asis'}
+data3 <- data2[data2$idnum!=91 & data2$idnum !=76,]
+lm.multi2 <- lm(data=data3, log(psa) ~ log(cancerv) + score + seminal)
+lm.multi.summary2 <- summary(lm.multi2)
+
+lm.coeff2 <- c(lm.multi.summary$coefficients["(Intercept)",1],  
+  lm.multi.summary2$coefficients["log(cancerv)",1],
+  lm.multi.summary2$coefficients["score7",1],
+  lm.multi.summary2$coefficients["score8",1],  
+  lm.multi.summary2$coefficients["seminalpresence",1],
+  lm.multi.summary2$adj.r.squared)
+
+lm.comparedf <- data.frame(cbind(lm.coeff, lm.coeff2))
+rownames(lm.comparedf) <- c("Intercept","Log(VOL)","SCORE7","SCORE8","SEM","Adj R2")
+colnames(lm.comparedf) <- c("Model 1", "Model 2")
+
+xtable(lm.comparedf,
+       label="tab.model.comp",
+       caption = "Compare full model with reduced model")
+
 ```
  
 \subsection{residuals}
+
+The model fitted values plotted against the residuals indicates a normal distribution of the residuals.  The results of the Shapiro test confirm the hypothesis of a normal distribution cannot be rejected 
 
 ```{r fig.resid.vs.fitted, include=TRUE, fig.cap="fitted vs residuals",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 #par(mfrow = c(1, 2))
@@ -761,7 +789,20 @@ The The p-value of `r ncv.out[3,]` from the non-constant variance test (shown ta
 
 
 
-```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```{r ref.label=knitr::all_labels(), eval=FALSE}
+  set.seed(10)
+  sp <- sample(2, nrow(cars), replace = TRUE, prob = c(0.80, 0.20))
+  data2.train <- data2[sp==1,]
+  data2.test <- data2[sp==2,]
+
+  lm.multi3 <- lm(data=data2.train, log(psa) ~ log(cancerv) + seminal)
+  summary(lm.multi3)
+  
+  pred <- predict(lm.multi3, data2.test, type='response')
+  actual <- log(data2.test$psa)
+  results <- data.frame(pred, actual,"% error"=((pred-actual)/actual)*100)
+  results
+  
 ```
 
 
