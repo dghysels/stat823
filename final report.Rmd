@@ -175,6 +175,9 @@ levels(data2$seminal) <- c("absence", "presence")
 data2$score <- factor(dataraw$score)
 levels(data2$score) <- c("6", "7", "8")
 
+data2$hyperplasia.log <- log(data2$hyperplasia + 0.0001)
+data2$capsular.log <- log(data2$capsular + 0.0001)
+
 attach(data2)
 ```
 \section{Results}
@@ -377,10 +380,13 @@ roundsummary <- function(df){
 lm.cancerv <- lm(data = data2, psa ~ cancerv)
 lm.cancerv.log <- lm(data = data2, log(psa) ~ log(cancerv))
 lm.hyperplasia <- lm(data = data2, psa ~ hyperplasia)
+lm.hyperplasia.log <- lm(data = data2, psa ~ hyperplasia.log)
 lm.capsular <- lm(data = data2, psa ~ capsular)
+lm.capsular.log <- lm(data = data2, psa ~ capsular.log)
 lm.weight <- lm(data = data2, psa ~ weight)
 lm.weight.log <- lm(data = data2, log(psa) ~ log(weight))
 lm.age <- lm(data = data2, psa ~ age)
+lm.age.log <- lm(data = data2, psa ~ log(age))
 lm.score6 <- lm(data = data2, psa ~ (score==6))
 lm.score7 <- lm(data = data2, psa ~ (score==7))
 lm.score8 <- lm(data = data2, psa ~ (score==8))
@@ -389,9 +395,13 @@ lm.seminal <- lm(data = data2, psa ~ seminal)
 summ.cancerv <- summary(lm.cancerv)
 summ.cancerv.log <- summary(lm.cancerv.log)
 summ.hyperplasia <- summary(lm.hyperplasia)
+summ.hyperplasia.log <- summary(lm.hyperplasia.log)
 summ.capsular <- summary(lm.capsular)
+summ.capsular.log <- summary(lm.capsular.log)
 summ.weight <- summary(lm.weight)
+summ.weight.log <- summary(lm.weight.log)
 summ.age <- summary(lm.age)
+summ.age.log <- summary(lm.age.log)
 summ.score8 <- summary(lm.score8)
 summ.seminal <- summary(lm.seminal)
 
@@ -400,17 +410,25 @@ mse.cancerv <- mean(residuals(lm.cancerv)^2)
 mse.cancerv.log <- mean(residuals(lm.cancerv.log)^2)
 mse.hyperplasia <- mean(residuals(lm.hyperplasia)^2)
 mse.capsular <- mean(residuals(lm.capsular)^2)
+mse.capsular.log <- mean(residuals(lm.capsular.log)^2)
 mse.weight <- mean(residuals(lm.weight)^2)
+mse.weight.log <- mean(residuals(lm.weight.log)^2)
 mse.age <- mean(residuals(lm.age)^2)
+mse.age.log <- mean(residuals(lm.age.log)^2)
 mse.score8 <- mean(residuals(lm.score8)^2)
 mse.seminal <- mean(residuals(lm.seminal)^2)
 
 summ.cancerv.all <- c(summ.cancerv$coefficients[c(2,4,6,8)],summ.cancerv$adj.r.squared,summ.cancerv$fstatistic[1])
 summ.cancerv.log.all <- c(summ.cancerv.log$coefficients[c(2,4,6,8)],summ.cancerv.log$adj.r.squared,summ.cancerv.log$fstatistic[1])
 summ.hyperplasia.all <- c(summ.hyperplasia$coefficients[c(2,4,6,8)],summ.hyperplasia$adj.r.squared,summ.hyperplasia$fstatistic[1])
+summ.hyperplasia.log.all <- c(summ.hyperplasia.log$coefficients[c(2,4,6,8)],
+                              summ.hyperplasia.log$adj.r.squared,summ.hyperplasia.log$fstatistic[1])
 summ.capsular.all <- c(summ.capsular$coefficients[c(2,4,6,8)],summ.capsular$adj.r.squared,summ.capsular$fstatistic[1])
+summ.capsular.log.all <- c(summ.capsular.log$coefficients[c(2,4,6,8)],summ.capsular.log$adj.r.squared,summ.capsular.log$fstatistic[1])
 summ.age.all <- c(summ.age$coefficients[c(2,4,6,8)],summ.age$adj.r.squared,summ.age$fstatistic[1])
+summ.age.log.all <- c(summ.age.log$coefficients[c(2,4,6,8)],summ.age.log$adj.r.squared,summ.age.log$fstatistic[1])
 summ.weight.all <- c(summ.weight$coefficients[c(2,4,6,8)],summ.weight$adj.r.squared,summ.weight$fstatistic[1])
+summ.weight.log.all <- c(summ.weight.log$coefficients[c(2,4,6,8)],summ.weight.log$adj.r.squared,summ.weight.log$fstatistic[1])
 summ.score8.all <- c(summ.score8$coefficients[c(2,4,6,8)],summ.score8$adj.r.squared,summ.score8$fstatistic[1])
 summ.seminal.all <- c(summ.seminal$coefficients[c(2,4,6,8)],summ.seminal$adj.r.squared,summ.seminal$fstatistic[1])
 
@@ -558,6 +576,68 @@ abline(h = 0)
 
 The regression plot and plot of the residuals vs. the fitted variables both indicate improvements in the distribution of the data. 
 
+```{r fig.log.WT.fitted, include=TRUE, fig.cap="WT Fitted AFter Log Transformation", fig.pos="H", fig.align='center', out.width="0.8\\linewidth"}
+
+par(mfrow=c(1,2),mar=c(5,4,4,3))
+plot(y=log(data2$psa),x=log(data2$weight), 
+     xlab="log(PSA)", 
+     ylab="log(WT)", 
+     main="log(WT) \n Regression Fit")
+abline(lm.weight.log)
+
+plot(fitted(lm.weight.log),residuals(lm.weight.log), 
+     xlab="residuals",
+     ylab="fitted",
+     main = "Log(WT)\n fitted vs residuals")
+abline(h = 0)
+```
+
+```{r fig.log.HYP.fitted, include=TRUE, fig.cap="HYP Fitted AFter Log Transformation", fig.pos="H", fig.align='center', out.width="0.8\\linewidth"}
+
+par(mfrow=c(1,2),mar=c(5,4,4,3))
+plot(y=log(data2$psa),x=data2$hyperplasia.log, 
+     xlab="log(PSA)", 
+     ylab="log(HYP)", 
+     main="log(HYP) \n Regression Fit")
+abline(lm.hyperplasia.log)
+
+plot(fitted(lm.hyperplasia.log),residuals(lm.hyperplasia.log), 
+     xlab="residuals",
+     ylab="fitted",
+     main = "Log(HYP)\n fitted vs residuals")
+abline(h = 0)
+```
+
+
+```{r fig.log.CAP.fitted, include=TRUE, fig.cap="HYP Fitted AFter Log Transformation", fig.pos="H", fig.align='center', out.width="0.8\\linewidth"}
+
+par(mfrow=c(1,2),mar=c(5,4,4,3))
+plot(y=log(data2$psa),x=data2$capsular.log, 
+     xlab="log(PSA)", 
+     ylab="log(CAP)", 
+     main="log(CAP) \n Regression Fit")
+abline(lm.capsular.log)
+
+plot(fitted(lm.capsular.log),residuals(lm.capsular.log), 
+     xlab="residuals",
+     ylab="fitted",
+     main = "Log(CAP)\n fitted vs residuals")
+abline(h = 0)
+```
+
+```{r}
+summarydf5 <- data.frame("VOL"=summ.cancerv.all,
+                         "log(VOL)"=summ.cancerv.log.all,
+                        "AGE"=summ.age.all,
+                        "log(AGE)"=summ.age.log.all,
+                        "WT"=summ.weight.all,
+                        "log(WT)"=summ.weight.log.all)
+rownames(summarydf5) <- c("beta1","std Err","t-value","p-value","adj. R2","f-statistic")
+
+kable(summarydf5,label = "tab.fitted.summary", caption = "Goodness-of-fit", digits = 5)
+```
+
+
 ```{r fig.log.VOL.QQ, echo=FALSE, include=TRUE, fig.cap="VOL QQ Plot AFter Log Transformation",fig.pos="H", fig.align='center', out.width="0.5\\linewidth"}
 qqnorm(residuals(lm.cancerv.log), main = "QQ Plot of log(VOL)")
 qqline(residuals(lm.cancerv.log))
@@ -599,12 +679,12 @@ Based on these findings, \textbf{VOL}, \textbf{CAP}, \textbf{SEM_{presence}} is 
 
 ```{r tab.covariate.sel, results = 'asis'}
 
-b <- regsubsets(log(psa) ~ log(cancerv)+seminal+capsular+score, data = data2)
+b <- regsubsets(log(psa) ~ log(cancerv)+seminal+hyperplasia.log+capsular.log+log(weight)+log(age), data = data2)
 regsub <- summary(b)
 regsubdf <- data.frame(regsub$which)
 #Assign columns names so we can look for each TRUE and buld a nice label
 #Note: these column names are also used in the loop below.  
-colnames(regsubdf) <- c("Intercept","VOL","SEM","CAP","SCORE7","SCORE8")
+colnames(regsubdf) <- c("Intercept","VOL","SEM","HYP","CAP","WT","AGE")
 
 #dynamically build a label for the variables
 #marked as TRUE to build the nice label
@@ -612,20 +692,32 @@ rowlabels <- vector(length = nrow(regsubdf))
 for(i in 1:nrow(regsubdf)){
   r <- regsubdf[i,]
   lbl <- vector()
-  if (regsubdf[i,"VOL"] == TRUE){
+  if ("VOL" %in% colnames(regsubdf) && regsubdf[i,"VOL"] == TRUE){
     lbl <-append(lbl, "VOL")
   }
-  if (regsubdf[i,"CAP"] == TRUE){
+  if ("cap" %in% colnames(regsubdf) && regsubdf[i,"CAP"] == TRUE){
     lbl <- append(lbl, "CAP")
   }
-  if (regsubdf[i,"SEM"] == TRUE){
+  if ("SEM" %in% colnames(regsubdf) && regsubdf[i,"SEM"] == TRUE){
     lbl <- append(lbl, "SEM")
   }
-  if (regsubdf[i,"SCORE7"] == TRUE){
+  if ("SCORE7" %in% colnames(regsubdf) && regsubdf[i,"SCORE7"] == TRUE){
     lbl <- append(lbl, "SCORE(7)")
   }
-  if (regsubdf[i,"SCORE8"] == TRUE){
+  if ("SCORE8" %in% colnames(regsubdf) && regsubdf[i,"SCORE8"] == TRUE){
     lbl <- append(lbl, "SCORE(8)")
+  }
+  if ("AGE" %in% colnames(regsubdf) && regsubdf[i,"AGE"] == TRUE){
+    lbl <- append(lbl, "AGE")
+  }
+  if ("WT" %in% colnames(regsubdf) && regsubdf[i,"WT"] == TRUE){
+    lbl <- append(lbl, "WT")
+  }
+   if ("HYP" %in% colnames(regsubdf) && regsubdf[i,"HYP"] == TRUE){
+    lbl <- append(lbl, "HYP")
+  }
+  if ("CAP" %in% colnames(regsubdf) && regsubdf[i,"CAP"] == TRUE){
+    lbl <- append(lbl, "CAP")
   }
   rowlabels[i] <- paste(lbl,collapse="+")
   
@@ -637,7 +729,7 @@ regsubdf <- data.frame(rowlabels,"RSS" = regsub$rss,
                        "cp"=regsub$cp, 
                        "bic"=regsub$bic)
 regsubdf[,2:5] <- round(regsubdf[,2:5],3)
-xtable(regsubdf, digits = 2
+kable(regsubdf, digits = 2
        , label = "tab.covariate.sel"
        ,table.placement="H")
 
@@ -660,12 +752,14 @@ test for linearity and variance for each variable
 The summary statistics for the multiple regression model indicate \textbf{VOL}, \textbf{$SCORE_{score=8}$} and \textbf{$SEM_{presence}$} are all statistically significant.
 
 ```{r tab.lm.summary,warning=FALSE, message=FALSE}
-lm.multi <- lm(data=data2, log(psa) ~ log(cancerv) + score + seminal)
+#lm.multi <- lm(data=data2, log(psa) ~ log(cancerv) + score + seminal)
+lm.multi <- lm(data=data2, log(psa) ~ log(cancerv) + log(weight) + seminal)
 lm.multi.summary <- summary(lm.multi)
 lm.coeff <- c(lm.multi.summary$coefficients["(Intercept)",1],  
   lm.multi.summary$coefficients["log(cancerv)",1],
-  lm.multi.summary$coefficients["score7",1],
-  lm.multi.summary$coefficients["score8",1],  
+  #lm.multi.summary$coefficients["score7",1],
+  #lm.multi.summary$coefficients["score8",1],  
+  lm.multi.summary$coefficients["log(weight)",1],
   lm.multi.summary$coefficients["seminalpresence",1],
   lm.multi.summary$adj.r.squared)
 require(gtsummary)
@@ -795,12 +889,12 @@ The The p-value of `r ncv.out[3,]` from the non-constant variance test (shown ta
   data2.train <- data2[sp==1,]
   data2.test <- data2[sp==2,]
 
-  lm.multi3 <- lm(data=data2.train, log(psa) ~ log(cancerv) + seminal)
+  lm.multi3 <- lm(data=data2.train, log(psa) ~ log(cancerv) +log(weight) + seminal)
   summary(lm.multi3)
   
-  pred <- predict(lm.multi3, data2.test, type='response')
-  actual <- log(data2.test$psa)
-  results <- data.frame(pred, actual,"% error"=((pred-actual)/actual)*100)
+  pred <- exp(predict(lm.multi3, data2.test, type='response'))
+  actual <- data2.test$psa
+  results <- data.frame(pred, actual,"pct error"=paste("%",((pred-actual)/actual)*100))
   results
   
 ```
