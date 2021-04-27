@@ -121,13 +121,15 @@ Put your abstract here
 
 \section{Introduction}
 
-Tracking the level of of the protein Prostate-specific antigen (PSA) in men diagnosed with prostate cancer is an an FDA approved method of monitoring the disease (\citet{cit.nat.cancer.inst}). The objective of this study is to evaluate the association between \textit{ Serum Prostate-specific antigen level (dependent variable) \textbf{(PSA)}} and 7 clinical measurements in men with advanced prostate cancer.  The measurements inclue \textbf{Estimate of prostate cancer volume}, \textbf{Prostate weight}, \textbf{Age of patient}, \textbf{Amount of benign prostatic hyperplasia}, \textbf{Degree of capsular penetration}, \textbf{Seminal Vesical Invasion}, and the \textbf{Cleason Score}.
+Tracking the level of of the protein Prostate-specific antigen (PSA) in men diagnosed with prostate cancer is considered an an FDA approved method of monitoring the disease (\citet{cit.nat.cancer.inst}). While testing PSA levels is still considered a valuable tool for monitoring, its use as a diagnostic tool is decreasing.  A strong relationship was found between PSA and the clinical stage of prostate cancer (\citet{stamey1989}) , but a later study by the same author found this correlation to be slowly decreasing (\citet{stamey2004}) due to changes in the way the disease is treated.  While 2004 study noted PSA is strongly correlated with the  weight of the prostate, the enlargement may likely be due to benign causes.  The 2004 study concludes a new marker is needed to replace PSA.  While the value of PSA as a prostate cancer indicator is decreasing, the 1989 study has been widely used and is referenced in several other studies until at least 2011 (\citet{netto}), and continues to be a useful tool for teaching data analysis (\citet{love})  The objective of this study is to evaluate data from the 1989 study to look for the association between \textbf{PSA} and 7 clinical measurements in men with advanced prostate cancer.  The measurements inclue \textbf{Estimate of prostate cancer volume}, \textbf{Prostate weight}, \textbf{Age of patient}, \textbf{Amount of benign prostatic hyperplasia}, \textbf{Degree of capsular penetration}, \textbf{Seminal Vesical Invasion}, and the \textbf{Cleason Score}.
 
 \section{Materials and Methods}
 
-The dataset was obtained from the project materials provided for the \href{https://courseware.ku.edu/bbcswebdav/pid-9064398-dt-content-rid-52612040_1/courses/4212-58856/Class_Project%282%29.pdf}{stat823 course}. A summary of the dependent and independent variables available is presented in Table \ref{table:model.variables}
+The dataset for this analysis was originally published by \citet{stamey1989} and then adapted by the textbook \emph{"Elements of Statistical Learning"} \citet{hastie}.  This text from Springer is credited in the \href{https://courseware.ku.edu/bbcswebdav/pid-9064398-dt-content-rid-52612040_1/courses/4212-58856/Class_Project%282%29.pdf}{stat823 course} project materials as the source of the adapated data.  A summary of the dependent and independent variables available is presented in Table \ref{table:model.variables}
 
-\begin{table}[h]
+Stat823 is not the first class to make use of this data.  \href{https://thomaselove.github.io/432-notes/a-study-of-prostate-cancer.html}{Thomas Love}, a previous statistical course author noted an error in one of the weight measurements.  The author noted the measurement of 450 grams should be 44.9 grams. This study has made the same correction for all analysis.
+
+\begin{table}[ht]
 \caption{Available independent and dependent variables}
 \centering
 \begin{tabular}{c c c c}
@@ -159,16 +161,15 @@ Selection of the final model makes use of the automatic covariate selection proc
 
 \subsubsection{Model Assumptions}
 
-To support linear regression, the errors are assumed to be normally distributed, the residuals of the dependent variable are assumed to be evenly distributed (constant variance) across the range of possible independent (x axis) values.  Because the model will use multiple covariates, the data is also assumed the outcomes are not influenced by multicollinearity \citep{wiley}.  
+To support linear regression and inference, the errors are assumed to be normally distributed, the residuals of the dependent variable are assumed to be evenly distributed (constant variance) across the range of possible independent (x axis) values.  Because the model will use multiple covariates, the model assumes the data is not influenced by multicollinearity \citep{wiley}.  
 
-If the data does not support the assumptions, a non-linear transformation of one or more variables may be used \citep{wiley}.  The use of a common transformation such as the use of a natural logarithm requires any observations with a value of zero to be first transformed.  Given the values of zero for \textbf{CAP} and \textbf{HYP}, a linear transformation is applied to all values.  A value of 0.0001 has been added to each observation.
+If the data does not support the assumptions, a non-linear transformation of one or more variables may be used \citep{wiley}.  The use of a common transformation such as a natural logarithm requires any observations with a value of zero to be first modified using a linear transformation.  Given the values of zero for \textbf{CAP} and \textbf{HYP}, a value of 0.0001 has been added to each of these two variables for all observations.  No other variables required a linear transformation prior to the log transformation.  
 
-The final model is tested to verify these key assumptions hold true.  
+The final model is tested to verify the assumptions required for linear regression.  The r ncvtest from the \href{https://www.rdocumentation.org/packages/car/versions/3.0-10/topics/ncvTest}{car} package to verify constant variance and  the Shapiro-Wilks test from \href{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/shapiro.test.html}{stats package} to verify a normal distribution of the residuals. The non-constant variance assumption will be tested using the ]href{https://cran.r-project.org/web/packages/car/index.html}{car} package
 
 \subsubsection{Primary Objective Analysis}
 
 The primary objective of the analysis is to determine if there is a significant relationship between \textbf{PSA} and other clinical measurements defined in the data dictionary.  
-
 
 ```{r message=FALSE}
 #load data and create the data frame
@@ -253,6 +254,8 @@ xtable(summ.table,
 
 ```{r include=TRUE}
 #----------plot the distribution of all continuous variables
+
+#This box theme will be applied to all of the plots
 dist.box.theme <-theme(plot.title = element_text(color="blue",
         size=10,
         face="bold",
@@ -427,30 +430,38 @@ xtable(tab.score$output.table,
 
 
 ```{r message=FALSE, warning=FALSE}
-#Create fitted models for all potential covariates
+#----Create fitted models for all potential covariates
+
+#VOL
 lm.cancerv <- lm(data = data2, psa ~ cancerv)
 lm.cancerv.log <- lm(data = data2,
                      log(psa) ~ log(cancerv))
+#HYP
 lm.hyperplasia <- lm(data = data2, 
                      psa ~ hyperplasia)
 lm.hyperplasia.log <- lm(data = data2, 
                          log(psa) ~ log(hyperplasia))
+#CAP
 lm.capsular <- lm(data = data2, 
                   psa ~ capsular)
 lm.capsular.log <- lm(data = data2,
                       log(psa) ~ log(capsular))
+#WT
 lm.weight <- lm(data = data2, psa ~ weight)
 lm.weight.log <- lm(data = data2, 
                     log(psa) ~ log(weight))
+#AGE
 lm.age <- lm(data = data2, psa ~ age)
 lm.age.log <- lm(data = data2, 
                  log(psa) ~ log(age))
+#SCORE
 lm.score6 <- lm(data = data2, 
                 psa ~ (score==6))
 lm.score7 <- lm(data = data2, 
                 psa ~ (score==7))
 lm.score8 <- lm(data = data2, 
                 psa ~ (score==8))
+#SEM
 lm.seminal <- lm(data = data2, 
                  psa ~ seminal)
 
@@ -568,14 +579,16 @@ rownames(summarydf) <- c("beta1","std Err","t-value","p-value","adj. R2","f-stat
 \subsection{Fitted Models}
 
 ```{r, tab.fitted.summary, message=FALSE, warning=FALSE, results='asis'}
-#Create a summary dataframe
-xtable(summarydf,label = "tab.fitted.summary", caption = "Goodness-of-fit")
+#--- create a table of the goodness-of-fit for all possible
+#model covariates
+xtable(summarydf,label = "tab.fitted.summary", 
+       caption = "Goodness-of-fit")
                         
 ```
 
 
 ```{r fig.CAP.fitted, fig.cap="CAP Fitted Model", message=FALSE,fig.pos="H", fig.align='center', out.width="0.8\\linewidth"}
-
+#--- Plot the fitted and residuals for CAP
 par(mfrow=c(1,2),mar=c(5,4,4,3))
 plot(y=data2$psa,x=data2$capsular, 
      xlab="PSA", 
@@ -603,6 +616,7 @@ abline(h = 0,col="forestgreen")
 ```
 
 ```{r fig.VOL.fitted, fig.cap="VOL Fitted Model", message=FALSE,fig.pos="H", fig.align='center', out.width="0.8\\linewidth"}
+#---Plot the fitted and residuals for VOL
 par(mfrow=c(1,2),mar=c(5,4,4,3))
 plot(y=data2$psa,x=data2$cancerv, 
      xlab="PSA", 
@@ -626,12 +640,13 @@ mtext("VOL Fitted vs Residuals",
       col="blue")
 abline(h = 0,col="forestgreen")
 
-box("outer")
+#box("outer")
 
 ```
 
 
 ```{r fig.WT.fitted, fig.cap="WT Fitted Model", message=FALSE,fig.pos="H", fig.align='center', out.width="0.8\\linewidth"}
+#---plot the fitted and Residuals for WT
 par(mfrow=c(1,2),mar=c(5,4,4,3))
 plot(y=data2$psa,x=data2$weight, 
      xlab="PSA", 
@@ -655,13 +670,13 @@ mtext("WT Fitted vs Residuals",
       col="blue")
 abline(h = 0,col="forestgreen")
 
-box("outer")
+#box("outer")
 
 ```
 
 
 ```{r fig.AGE.fitted, fig.cap="AGE Fitted Model", message=FALSE,fig.pos="H", fig.align='center', out.width="0.8\\linewidth"}
-
+#---- PLot the fitted and residuals for AGE
 par(mfrow=c(1,2),mar=c(5,4,4,3))
 plot(y=data2$psa,x=data2$age, 
      xlab="PSA", 
@@ -685,12 +700,13 @@ mtext("AGE Fitted vs Residuals",
       col="blue")
 abline(h = 0,col="forestgreen")
 
-box("outer")
+#box("outer")
 
 ```
 
 
 ```{r, HYP.fitted, echo=FALSE, fig.cap="HYP Fitted Model", message=FALSE,fig.pos="H", fig.align='center', out.width="0.8\\linewidth"}
+#---- Plot the fitted and residuals for HYP
 par(mfrow=c(1,2),mar=c(5,4,4,3))
 plot(y=data2$psa,x=data2$hyperplasia, 
      xlab="PSA", 
@@ -714,7 +730,7 @@ mtext("HYP Fitted vs Residuals",
       col="blue")
 abline(h = 0,col="forestgreen")
 
-box("outer")
+#box("outer")
 
 ```
 
@@ -727,7 +743,7 @@ The non constant variance test and shapiro-wilks is used to determine if the dat
 
 ```{r tab.ncv, echo=FALSE, include=TRUE, message=TRUE, results = 'asis'}
 #Calculate the Shapiro-wilks p-value and 
-#non-constant variance for the untransformed 
+#non-constant variance for the NOT-TRANSFORMED 
 #fitted models
 
 #calculate the p-values for each covariate
@@ -770,6 +786,8 @@ The regression assumptions require a constant variance and normal distribution o
 The regression model for the transformed \textbf{VOL} is expressed as $log(PSA)=\beta_{0} + \beta_{1}log(VOL)$ and $log(PSA)=\beta_{0} + \beta_{1}log(WT)$ for \textbf{WT}
 
 ```{r fig.log.fitted, include=TRUE, fig.cap="VOL and WT Fitted AFter Log Transformation", fig.pos="H", fig.align='center', out.width="0.8\\linewidth"}
+#---- plot the TRANSFORMED fitted model
+#for VOL and WT
 
 par(mfrow=c(1,2),mar=c(5,4,4,3))
 plot(y=log(data2$psa),x=log(data2$cancerv), 
@@ -792,17 +810,17 @@ mtext("log(WT) \n Regression Fit",
       col="blue")
 abline(lm.weight.log,col="forestgreen")
 
-box("outer")
+#box("outer")
 
 ```
 
-The goodness-of-fit values as shown in in table \ref{tab.fitted.summary2} indicates the log transformation also improved the $Adj.R^{2}$ and the p-values for \textbf{VOL} and \textbf{WT}.  A comparison of the adjusted $Adj.R^{2}$ before the transformation \textbf{WT} was not considered significant and after the transformation the p-value clearly indicates \textbf{WT} has a signicant relationship with \textbf{PSA} 
+The goodness-of-fit values as shown in in table \ref{tab.fitted.summary2} indicates the log transformation improved the $Adj.R^{2}$ and the p-values for \textbf{VOL} and \textbf{WT} indicating these variables now have a stronger linear relationship to /textbf{PSA}.  A comparison of the adjusted p-values before the transformation shows \textbf{WT} is not considered significant.  The p-value after the transformation now supports the null hypothesis \textbf{WT} has a signicant relationship with \textbf{PSA} 
 
 The shapiro-wilks test using the transformed data shown in table \ref{tab.log.ncv} indicates all the null hypothesis of normal distribution of the residuals must be accepted.  The non-constant variance test indicates the null hypothesis should be accept for all by \textbf{CAP} and \textbf{HYP}  
 
 ```{r tab.fitted.summary2, warning=FALSE, include=TRUE, message=TRUE, results = 'asis'}
-#----- create a table of the transformed regression summaries
-# with the before transformation and after transformation
+#----- create a table of the regression summaries
+# with the BOTH TRANSFORMED and  NOT-TRANSFORMED
 # betas and goodness of fit values
 
 #format summary function formats the decimal position
@@ -830,14 +848,6 @@ rownames(summarydf2) <- c("beta1","std Err","t-value","p-value","adj. R2","f-sta
 xtable(summarydf2,label = "tab.fitted.summary2",
        caption = "Goodness-of-fit after transformation", 
        table.placement="H")
-```
-
-
-```{r message=FALSE, warning=FALSE}
-summarydf2 <- data.frame("Log(VOL)"=summ.cancerv.log.all,
-                        "VOL"=summ.cancerv.all)
-rownames(summarydf2) <- c("beta1","std Err","t-value","p-value","adj. R2","f-statistic")
-
 ```
 
 
@@ -883,13 +893,16 @@ xtable(cancerv.normdf,
 \section{Covariate Selection}
 
 ```{r tab.covariate.sel, results = 'asis'}
-#------ use regsubsets to create to determine
-#the best model
+#------ use regsubsets to determine
+#the best final model from the possible
+#covariates
 b <- regsubsets(log(psa) ~ log(cancerv)+
                   log(hyperplasia)+
-                  age+seminal+
+                  age+
+                  seminal+
                   log(weight)+
-                  score, data = data2)
+                  score, 
+                  data = data2)
 regsub <- summary(b)
 
 #the summary created for regsubsets needs some help
@@ -971,8 +984,8 @@ xtable(regsubdf, digits = 3
 
 
 ```{r warning=FALSE, message=FALSE}
-#-----build the multiple regression model
-#but don't display yet
+#-----build the final regression model
+#but don't display the summary yet
 
 lm.multi <- lm(data=data2, log(psa) ~ 
                  log(cancerv) + 
@@ -1022,14 +1035,14 @@ $log(VOL)$ = $\beta_{0} + \beta_{1}log(VOL) + \beta_{2}Log(weight) + \beta_{3}SE
 \end{itemize} 
 
 ```{r tab.lm.summary,warning=FALSE, message=FALSE}
-#----display the output of the multiple regression
+#----display the summary of the final model
 #model as a formatted table
 tbl_regression(lm.multi)
 ```
 
 ```{r tab.summ.stat, results = 'asis'}
 #---- output the mean squared error
-# and adjusted R2 for the multiple regressoin
+# and adjusted R2 for the final
 # model
 
 mse.multi <- mean(residuals(lm.multi)^2)
@@ -1054,8 +1067,8 @@ As verification, table \ref{tab.model.comp} compares a \textbf{model 2} with the
 
 
 ```{r, tab.largest.hat, results = 'asis'}
-#----get the most influential HAT values for the
-#multiple regression model
+#----calculate the most influential HAT values for the
+#final model and display the top 6 as a table
 lm.multi.influence <- influence(lm.multi)
 
 #output the most influential HAT values
@@ -1067,8 +1080,9 @@ xtable(largest.hat,
 ```
 
 
-```{r fig.influence, include=TRUE, fig.cap="fitted vs residuals",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+```{r fig.influence, include=TRUE, fig.cap="HAT Influence",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 #----- plot the most influential observations
+#for the final model using Hat values
 multi.influence.tab <-influencePlot(lm.multi, 
                                     id = list(n = 3))
 
@@ -1077,7 +1091,8 @@ multi.influence.tab <-influencePlot(lm.multi,
 
 ```{r, tab.cooksd, results='asis'}
 #---- create a table of the largest
-#cooks distance and output as a table
+#cooks distance for the final mode
+# and output as a table
 cooksd <- data.frame(head(sort(cooks.distance(lm.multi),decreasing=TRUE),6))
 colnames(largest.hat) <- c("Hat Influence")
 xtable(largest.hat, 
@@ -1093,7 +1108,7 @@ xtable(largest.hat,
 ```{r}
 #----create the QQ normal plot for each
 # of the covariates included in the final
-# model
+# model to visualize influential observations
 par(mfrow=c(2,2))
 qqnorm(lm.multi.influence$coef[,2],main="VOL Influence")
 qqnorm(lm.multi.influence$coef[,3],main="WT Influence")
@@ -1102,7 +1117,7 @@ qqnorm(lm.multi.influence$coef[,4],main="SEM Influence")
 
 
 ```{r tab.model.comp, results='asis'}
-#---- Test the model by removing the two most influential
+#---- Test the final model by removing the two most influential
 #observations 
 
 #Identify the observations with the largest cooks distance
@@ -1143,29 +1158,32 @@ xtable(lm.comparedf,
  
 \subsection{Verification of Model Assumptions}
 
-The plot \ref{fig.resid.vs.fitted} indicates the residuals for the regression model are normally distributed and the variance is constant across the x-axis.  The observations are verified using the shapiro-wilks test and the non-constant variance test.  The output from the Shapiro-Wilks test indicates the null hypothesis of a normal distribution of the residuals must be accepted.  Similarly, table \ref{tab.ncv.test} indicates the null hypothesis of constant variance must also be accepted.  The Variance Inflation Factor in table \ref{tab.vif} also indicates all values are less 5 and the model does not exhibhit problems with collinearity  
+The plot \ref{fig.resid} indicates the residuals for the regression model are normally distributed and the variance is constant across the x-axis.  The observations are verified using the shapiro-wilks test and the non-constant variance test.  The output from the Shapiro-Wilks test indicates the null hypothesis of a normal distribution of the residuals must be accepted.  Similarly, table \ref{tab.ncv.test} indicates the null hypothesis of constant variance must also be accepted.  The Variance Inflation Factor in table \ref{tab.vif} also indicates all values are less 5 and the model does not exhibhit problems with collinearity  
 
 
-```{r fig.resid.vs.fitted, include=TRUE, fig.cap="fitted vs residuals",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
-#par(mfrow = c(1, 2))
+```{r fig.resid, include=TRUE, fig.cap="fitted vs residuals", fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+#----plot the final model fitted vs residuals 
 plot(fitted(lm.multi),residuals(lm.multi), 
      main= "residuals vs fitted values"); 
 abline(h = 0)
 ```
 
 ```{r fig.shapiro, include=TRUE, fig.cap="shapiro-wilks test of residuals",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
-
+#plot the shapio-wilks p-value and qqnorm plot
 shapiro.qqnorm(residuals(lm.multi), cex = 2)
 ```
 
 ```{r tab.ncv.test, include=TRUE, fig.cap="non-constant variance (Breusch-Pagan)test",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
-
+#----compute the non-constant variance
 ncv <- (ncvTest(lm.multi))
+
+#copy the output to a dataframe
 ncv.out <- data.frame(c(ncv$ChiSquare,ncv$Df,ncv$p))
 rownames(ncv.out) <- c("Chi-squre",
                        "Degrees of Freedom",
                        "p-value")
 colnames(ncv.out) <- c("value")
+#display using xtable
 xtable(ncv.out,label = "tab.ncv.test")
 ```
 
