@@ -115,9 +115,7 @@ out_type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
 \pagenumbering{arabic}
 
 \section{Abstract}
-Put your abstract here
-
-\newpage
+Healthcare providers require accurate markers to understand the disease progression for patients with prostate cancer.  PSA was once accepted as a method the prostate health of men, but its value has fallen over the past three decades.  However, the data collected while studying cancer patients may still be considered a valuable tool for students learning to evaluate clinical data.  The goal of this investigation is to understand the relationship between PSA and 7 other clinical measures. 
 
 \section{Introduction}
 
@@ -150,8 +148,10 @@ Cleason Score & na & SCORE & Categorical \\ [1ex] % [1ex] adds vertical space
 \label{table:model.variables}
 \end{table}
 
+\section{results and conclusions}
+\textbf{PSA} is found to have significant relationship with the three covariates \textbf{WT}, \textbf{SEM} and \textbf{VOL} using mutliple linear regression. 
 
-\subsection{Statistical Analysis}
+\section{Statistical Analysis}
 
 The data is analyzed using multiple linear regression using the R programming language `r R.version.string` [R](https://www.r-project.org/) \citep{r2021}. The data contains 97 observations and does not appear to include any missing values.  Hyperplasia and Capsular contain observations with a value of 0, which are assumed to be correctly recorded observations.  
 
@@ -161,7 +161,7 @@ Selection of the final model makes use of the automatic covariate selection proc
 
 \subsubsection{Model Assumptions}
 
-To support linear regression and inference, the errors are assumed to be normally distributed, the residuals of the dependent variable are assumed to be evenly distributed (constant variance) across the range of possible independent (x axis) values.  Because the model will use multiple covariates, the model assumes the data is not influenced by multicollinearity \citep{wiley}.  
+To support linear regression and inference several key assumptions must be verified (\citep{wiley}).  First, a linear relationship must exist between the independent and dependent variables, the errors are assumed to be normally distributed, the residuals of the dependent variable are assumed to be evenly distributed (constant variance) across the range of possible independent (x axis) values.  Because the model will use multiple covariates, the model assumes the data is not influenced by multicollinearity.  
 
 If the data does not support the assumptions, a non-linear transformation of one or more variables may be used \citep{wiley}.  The use of a common transformation such as a natural logarithm requires any observations with a value of zero to be first modified using a linear transformation.  Given the values of zero for \textbf{CAP} and \textbf{HYP}, a value of 0.0001 has been added to each of these two variables for all observations.  No other variables required a linear transformation prior to the log transformation.  
 
@@ -781,7 +781,7 @@ kable(cancerv.normdf,label="tab:tab.ncv",
 
 \subsection{Transformations}
 
-The regression assumptions require a constant variance and normal distribution of residual errors, which the data does not achieve. A log transformation of \textbf{PSA}, \textbf{VOL}, \textbf{CAP}, \textbf{HYP}, \textbf{WT} generates an improved distribution of the residuals and non-constant variance for each of these variables.  The improvement is particularly pronounced for \textbf{WT} and \textbf{VOL}
+The regression assumptions require a constant variance and normal distribution of residual errors, which the data does not achieve. A log transformation of dependent variable \textbf{PSA} and the independent variables \textbf{VOL}, \textbf{CAP}, \textbf{HYP}, \textbf{WT} generates an improved distribution of the residuals and non-constant variance for each of these variables.  The improvement is particularly pronounced for \textbf{WT} and \textbf{VOL}
 
 The regression model for the transformed \textbf{VOL} is expressed as $log(PSA)=\beta_{0} + \beta_{1}log(VOL)$ and $log(PSA)=\beta_{0} + \beta_{1}log(WT)$ for \textbf{WT}
 
@@ -1002,9 +1002,7 @@ lm.coeff <- c(lm.multi.summary$coefficients["(Intercept)",1],
   lm.multi.summary$adj.r.squared)
 ```
 
-Final model selection is aided by the regsubsets function available in the leaps R package.  The output indicates several possible combinations with very similar cp, BIC and $Adj.R{2}$ values.  Models with \textbf{HYP} are rejected because of the problems discovered earlier with non-constant variance.  Addition of \textbf{$SCORE_{=8}$} offered a small improvement in each of the measures, but the cost of additional complexity.
-
-Evaluation of the automatic covariate selection indicates the model with the lowest BIC, cp and the highest $R^{2}$ while also minimizing the complexity of the final model includes the following 3 covariates: 
+Final model selection is aided by the regsubsets function available in the leaps R package.  The automatic covariate selection output indicates the model with the lowest BIC, cp and the highest $R^{2}$ is a complex Five covariates model.  Based on the issues already discovered with \textbf{HYP} residuals, models that include this variable are rejected.  A Four covariate model is now best, but the improvements in $R^{2}$ and BIC are very small when compared to the Three covariate model.  Based on the small improvements and concerns over complexity and potential overfitting, the final model uses the following three covariates: 
 
 \begin{itemize}
   \item \textbf{VOL}
@@ -1018,7 +1016,13 @@ Evaluation of the automatic covariate selection indicates the model with the low
 
 The summary statistics for the multiple regression model indicate \textbf{Log(VOL)}, \textbf{Log(WT)} and \textbf{$SEM_{presence}$} are all statistically significant.
 
-The adjusted $R^{2}$ value in table \ref{tab.summ.stat} indicates a moderate linear relationship
+```{r tab.lm.summary,warning=FALSE, message=FALSE, results='asis'}
+#----display the summary of the final model
+#model as a formatted table
+tbl_regression(lm.multi)
+#xtable(summary(lm.multi))
+```
+The adjusted $R^{2}$ value in table \ref{tab.summ.stat} indicates `r (summary(lm.multi)$adj.r.squared)*100` percent of the variability in the data can be explained by the model.  This $R^{2}$ represents a moderate linear relationship between the dependent and independent variables.
 
 The response formula is as follows
 $log(VOL)$ = $\beta_{0} + \beta_{1}log(VOL) + \beta_{2}Log(weight) + \beta_{3}SEM_{presence}$ 
@@ -1033,12 +1037,6 @@ $log(VOL)$ = $\beta_{0} + \beta_{1}log(VOL) + \beta_{2}Log(weight) + \beta_{3}SE
   \item 
   $\beta_{3}$ = `r lm.multi.summary$coefficients["seminalpresence",1]`  
 \end{itemize} 
-
-```{r tab.lm.summary,warning=FALSE, message=FALSE}
-#----display the summary of the final model
-#model as a formatted table
-tbl_regression(lm.multi)
-```
 
 ```{r tab.summ.stat, results = 'asis'}
 #---- output the mean squared error
