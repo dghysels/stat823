@@ -114,6 +114,9 @@ out_type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
 \newpage
 \pagenumbering{arabic}
 
+\section{Title}
+Studying Factors Associated with Prostate-Specific Antigen (PSA) Levels in Prostate Cancer Patients
+
 \section{Abstract}
 Healthcare providers require accurate markers to understand the disease progression for patients with prostate cancer.  PSA was once accepted as a method the prostate health of men, but its value has fallen over the past three decades.  However, the data collected while studying cancer patients may still be considered a valuable tool for students learning to evaluate clinical data.  The goal of this investigation is to understand the relationship between PSA and 7 other clinical measures. 
 
@@ -1156,8 +1159,6 @@ xtable(lm.comparedf,
  
 \subsection{Verification of Model Assumptions}
 
-The plot \ref{fig.resid} indicates the residuals for the regression model are normally distributed and the variance is constant across the x-axis.  The observations are verified using the shapiro-wilks test and the non-constant variance test.  The output from the Shapiro-Wilks test indicates the null hypothesis of a normal distribution of the residuals must be accepted.  Similarly, table \ref{tab.ncv.test} indicates the null hypothesis of constant variance must also be accepted.  The Variance Inflation Factor in table \ref{tab.vif} also indicates all values are less 5 and the model does not exhibhit problems with collinearity  
-
 
 ```{r fig.resid, include=TRUE, fig.cap="fitted vs residuals", fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 #----plot the final model fitted vs residuals 
@@ -1166,12 +1167,15 @@ plot(fitted(lm.multi),residuals(lm.multi),
 abline(h = 0)
 ```
 
+The residuals plot indicates the residuals for the regression model are normally distributed and the variance is constant across the x-axis.  The observations are verified using the shapiro-wilks test and the non-constant variance test.  The output from the Shapiro-Wilks test indicates the null hypothesis of a normal distribution of the residuals must be accepted.  Similarly, table \ref{tab.ncv.test} indicates the null hypothesis of constant variance must also be accepted.  The Variance Inflation Factor in table \ref{tab.vif} also indicates all values are less 5 and the model does not exhibhit problems with collinearity  
+
+
 ```{r fig.shapiro, include=TRUE, fig.cap="shapiro-wilks test of residuals",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 #plot the shapio-wilks p-value and qqnorm plot
 shapiro.qqnorm(residuals(lm.multi), cex = 2)
 ```
 
-```{r tab.ncv.test, include=TRUE, fig.cap="non-constant variance (Breusch-Pagan)test",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+```{r tab.ncv.test, results='asis', include=TRUE, fig.cap="non-constant variance (Breusch-Pagan)test",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 #----compute the non-constant variance
 ncv <- (ncvTest(lm.multi))
 
@@ -1182,7 +1186,9 @@ rownames(ncv.out) <- c("Chi-squre",
                        "p-value")
 colnames(ncv.out) <- c("value")
 #display using xtable
-xtable(ncv.out,label = "tab.ncv.test")
+xtable(ncv.out,
+       label = "tab.ncv.test",
+       caption = " Non-Constant Variance Test")
 ```
 
 ```{r tab.vif, results='asis'}
@@ -1195,21 +1201,25 @@ rownames(vifdf) <- c("Log(VOL)","Log(WT)","SEM")
 colnames(vifdf) <- c("Variance Inflation Factor")
 
 #output as a table
-xtable(vifdf,label = "tab.vif")
+xtable(vifdf,label = "tab.vif",
+       caption = "Variance Inflation Factors test for Multicollinearity")
 ```
   
 
+To demonstrate the performance of the model, a random sample of 85% of the data is used to train the model and 15% held to test the model.  Table \ref{actual.pred} provides a summary of the predicted response vs. the actual PSA value.  
 
 
-```{r , results='asis'}
+```{r actual.pred, results='asis'}
 #test the model by creating test and training data sets
   set.seed(10)
-  sp <- sample(2, nrow(cars), replace = TRUE, prob = c(0.80, 0.20))
+  sp <- sample(2, nrow(cars), replace = TRUE, prob = c(0.85, 0.15))
   data2.train <- data2[sp==1,]
   data2.test <- data2[sp==2,]
 
 #create a new model using the training data set
-  lm.multi3 <- lm(data=data2.train, log(psa) ~ log(cancerv) +log(weight) + seminal)
+  lm.multi3 <- lm(data=data2.train, log(psa) ~ log(cancerv) +
+                    log(weight) + 
+                    seminal)
   
 #use the test data set to make predictions about the response
   pred <- exp(predict(lm.multi3, data2.test, type='response'))
@@ -1219,10 +1229,10 @@ xtable(vifdf,label = "tab.vif")
   err <- (pred-actual)/actual
 #output the results in a data frame
   results <- data.frame(pred, actual,"pct error"=paste("%",round(err*100,1),sep=""))
-  xtable(results)
+  xtable(results, label = "actual.pred", caption = "Test The Model - Actual vs. Predicted")
   
 ```
-
+\newpage
 ```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
 
 
