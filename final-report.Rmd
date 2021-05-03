@@ -573,7 +573,12 @@ summarydf <- formatsummary(data.frame("VOL"=summ.cancerv.all,
                         exp = 2)
 
 #Apply row names
-rownames(summarydf) <- c("beta1","std Err","t-value","p-value","adj. R2","f-statistic")
+rownames(summarydf) <- c("beta1",
+                         "std Err",
+                         "t-value",
+                         "p-value",
+                         "adj. R2",
+                         "f-statistic")
 ```
 
 \subsection{Fitted Models}
@@ -771,7 +776,11 @@ cancerv.normdf <- formatsummary(data.frame(cbind(ncvp.v,swp.v)),
 
 #set some column and row names
 colnames(cancerv.normdf) <- c("Non-Constant Variance","Shapiro-Wilks")
-rownames(cancerv.normdf) <- c("VOL","WT","AGE","CAP","HYP")
+rownames(cancerv.normdf) <- c("VOL",
+                              "WT",
+                              "AGE",
+                              "CAP",
+                              "HYP")
 
 #output the table
 kable(cancerv.normdf,label="tab:tab.ncv",
@@ -839,7 +848,12 @@ summarydf2 <- formatsummary(data.frame("VOL"=summ.cancerv.all,
                         exp = 3)
 
 #add rownames to the summary data frame
-rownames(summarydf2) <- c("beta1","std Err","t-value","p-value","adj. R2","f-statistic")
+rownames(summarydf2) <- c("beta1",
+                          "std Err",
+                          "t-value",
+                          "p-value",
+                          "adj. R2",
+                          "f-statistic")
 
 #p.value <- summarydf2["p-value",1]
 #adj.r2 <- summarydf2["adj. R2",1]
@@ -881,7 +895,11 @@ cancerv.normdf <- formatsummary(data.frame(cbind(ncvp.v,swp.v)),
 
 #set some column and row names
 colnames(cancerv.normdf) <- c("Non-Constant Variance","Shapiro-Wilks")
-rownames(cancerv.normdf) <- c("VOL","WT","AGE","CAP","HYP")
+rownames(cancerv.normdf) <- c("VOL",
+                              "WT",
+                              "AGE",
+                              "CAP",
+                              "HYP")
 
 #output the TRANSFORMED goodness of fit table
 xtable(cancerv.normdf,
@@ -917,7 +935,14 @@ regsubdf <- data.frame(regsub$which)
 #Note: these column names are also used in the loop below. 
 #IMPORTANT - These labels must match
 #the column names in the 'regsub' summary
-colnames(regsubdf) <- c("Intercept","VOL","HYP","AGE","SEM","WT","SCORE7","SCORE8")
+colnames(regsubdf) <- c("Intercept",
+                        "VOL",
+                        "HYP",
+                        "AGE",
+                        "SEM",
+                        "WT",
+                        "SCORE7",
+                        "SCORE8")
 
 #Loop through all the rows and determine
 #which covariates were used for that row
@@ -1156,7 +1181,7 @@ xtable(lm.comparedf,
  
 \subsection{Verification of Model Assumptions}
 
-The plot \ref{fig.resid} indicates the residuals for the regression model are normally distributed and the variance is constant across the x-axis.  The observations are verified using the shapiro-wilks test and the non-constant variance test.  The output from the Shapiro-Wilks test indicates the null hypothesis of a normal distribution of the residuals must be accepted.  Similarly, table \ref{tab.ncv.test} indicates the null hypothesis of constant variance must also be accepted.  The Variance Inflation Factor in table \ref{tab.vif} also indicates all values are less 5 and the model does not exhibhit problems with collinearity  
+The residuals vs. fitted values plot indicates the residuals for the regression model are normally distributed and the variance is constant across the x-axis.  The observations are verified using the shapiro-wilks test and the non-constant variance test.  The output from the Shapiro-Wilks test indicates the null hypothesis of a normal distribution of the residuals must be accepted.  Similarly, table \ref{tab.ncv.test} indicates the null hypothesis of constant variance must also be accepted.  The Variance Inflation Factor in table \ref{tab.vif} also indicates all values are less 5 and the model does not exhibhit problems with collinearity  
 
 
 ```{r fig.resid, include=TRUE, fig.cap="fitted vs residuals", fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
@@ -1171,7 +1196,7 @@ abline(h = 0)
 shapiro.qqnorm(residuals(lm.multi), cex = 2)
 ```
 
-```{r tab.ncv.test, include=TRUE, fig.cap="non-constant variance (Breusch-Pagan)test",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+```{r tab.ncv.test, include=TRUE, results='asis', fig.cap="non-constant variance (Breusch-Pagan)test",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 #----compute the non-constant variance
 ncv <- (ncvTest(lm.multi))
 
@@ -1182,7 +1207,8 @@ rownames(ncv.out) <- c("Chi-squre",
                        "p-value")
 colnames(ncv.out) <- c("value")
 #display using xtable
-xtable(ncv.out,label = "tab.ncv.test")
+xtable(ncv.out,label = "tab.ncv.test", 
+       caption = "Non-constant variance")
 ```
 
 ```{r tab.vif, results='asis'}
@@ -1195,16 +1221,17 @@ rownames(vifdf) <- c("Log(VOL)","Log(WT)","SEM")
 colnames(vifdf) <- c("Variance Inflation Factor")
 
 #output as a table
-xtable(vifdf,label = "tab.vif")
+xtable(vifdf,label = "tab.vif", 
+       caption = "Variance Inflation Factor test for Multicollinearity")
 ```
   
 
+The model performance is tested by randomly sampling 85% of the data to create training data.  The remaining 15% of the data are used to test the model after training.  Table \ref{tab.pred.actual} prvides a summary of the predicted response vs. the actual PSA value
 
-
-```{r , results='asis'}
+```{r tab.pred.actual, results='asis'}
 #test the model by creating test and training data sets
   set.seed(10)
-  sp <- sample(2, nrow(cars), replace = TRUE, prob = c(0.80, 0.20))
+  sp <- sample(2, nrow(cars), replace = TRUE, prob = c(0.85, 0.15))
   data2.train <- data2[sp==1,]
   data2.test <- data2[sp==2,]
 
@@ -1219,9 +1246,11 @@ xtable(vifdf,label = "tab.vif")
   err <- (pred-actual)/actual
 #output the results in a data frame
   results <- data.frame(pred, actual,"pct error"=paste("%",round(err*100,1),sep=""))
-  xtable(results)
+  xtable(results, label = "tab.pred.actual", caption="Test the Model - Predicted vs. Actual results")
   
 ```
+
+\newpage
 
 ```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
 
