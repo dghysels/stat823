@@ -94,7 +94,7 @@ knitr::opts_chunk$set(echo = FALSE)
 options(digits = 5,
         width = 60, 
         xtable.comment = FALSE)
-opts_chunk$set(tidy.opts = list(width.cutoff=60), tidy=TRUE)
+#opts_chunk$set(tidy.opts = list(width.cutoff=60), tidy=TRUE)
 out_type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
 ```
 
@@ -115,11 +115,11 @@ out_type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
 \pagenumbering{arabic}
 
 \section{Abstract}
-Healthcare providers require accurate markers to understand the disease progression for patients with prostate cancer.  PSA was once accepted as a method the prostate health of men, but its value has fallen over the past three decades.  However, the data collected while studying cancer patients may still be considered a valuable tool for students learning to evaluate clinical data.  The goal of this investigation is to understand the relationship between PSA and 7 other clinical measures. 
+Healthcare providers require accurate markers to understand the disease progression for patients with prostate cancer.  Monitoring the protein Prostate-Specific Antigen (PSA) is accepted as a method the prostate health of men, but its value has fallen over the past three decades.  However, the data collected while studying cancer patients may still be considered a valuable tool for students learning to evaluate clinical data.  The goal of this investigation is to understand the relationship between PSA and 7 other clinical measures. 
 
 \section{Introduction}
 
-Tracking the level of the protein Prostate-specific antigen (PSA) in men diagnosed with prostate cancer is considered an FDA approved method of monitoring the disease (\citet{cit.nat.cancer.inst}). While testing PSA levels is still considered a valuable tool for monitoring, its use as a diagnostic tool is decreasing.  A strong relationship was found between PSA and the clinical stage of prostate cancer (\citet{stamey1989}) , but a later study by the same author found this correlation to be slowly decreasing (\citet{stamey2004}) due to changes in the way the disease is treated.  While 2004 study noted PSA is strongly correlated with the  weight of the prostate, the enlargement may likely be due to benign causes.  The 2004 study concludes a new marker is needed to replace PSA.  While the value of PSA as a prostate cancer indicator is decreasing, the 1989 study has been widely used and is referenced in several other studies until at least 2011 (\citet{netto}), and continues to be a useful tool for teaching data analysis (\citet{love})  The objective of this study is to evaluate data from the 1989 study to look for the association between \textbf{PSA} and 7 clinical measurements in men with advanced prostate cancer.  The measurements inclue \textbf{Estimate of prostate cancer volume}, \textbf{Prostate weight}, \textbf{Age of patient}, \textbf{Amount of benign prostatic hyperplasia}, \textbf{Degree of capsular penetration}, \textbf{Seminal Vesical Invasion}, and the \textbf{Cleason Score}.
+Tracking the level of the protein Prostate-specific antigen (PSA) in men diagnosed with prostate cancer is considered an FDA approved method of monitoring the disease (\citet{cit.nat.cancer.inst}). While testing PSA levels is still considered a valuable tool for monitoring, its use as a diagnostic tool is decreasing.  A strong relationship was found between PSA and the clinical stage of prostate cancer (\citet{stamey1989}), but a later study by the same author found this correlation to be slowly decreasing (\citet{stamey2004}) due to changes in the way the disease is treated.  While the 2004 study noted PSA is strongly correlated with the  weight of the prostate, the enlargement may likely be due to benign causes.  The 2004 study concludes a new marker is needed to replace PSA.  While the value of PSA as a prostate cancer indicator is decreasing, the 1989 study has been widely used and is referenced in several other studies until at least 2011 (\citet{netto}), and continues to be a useful tool for teaching data analysis (\citet{love})  The objective of this study is to evaluate data from the 1989 study to look for the association between \textbf{PSA} and 7 clinical measurements in men with advanced prostate cancer.  The measurements inclue \textbf{Estimate of prostate cancer volume}, \textbf{Prostate weight}, \textbf{Age of patient}, \textbf{Amount of benign prostatic hyperplasia}, \textbf{Degree of capsular penetration}, \textbf{Seminal Vesical Invasion}, and the \textbf{Cleason Score}.
 
 \section{Materials and Methods}
 
@@ -153,7 +153,7 @@ Gleason Score & na & SCORE & Categorical \\ [1ex] % [1ex] adds vertical space
 
 \section{Statistical Analysis}
 
-The data are analyzed using multiple linear regression using the R programming language `r R.version.string` [R](https://www.r-project.org/) \citep{r2021}. The data contain 97 observations and do not appear to include any missing values.  Hyperplasia and Capsular contain observations with a value of 0 which are assumed to be correctly recorded observations.  
+The data are analyzed using multiple linear regression using the R programming language `r R.version.string` [R](https://www.r-project.org/) \citep{r2021}. The data contain 97 observations and do not appear to include any missing values.  Hyperplasia and Capsular contain observations with a value of zero which are assumed to be correctly recorded observations.  
  
 The adjusted $R^{2}$ is used to check the strength of the linear relationship between the dependent and independent variables. The relationship between the dependent and independent variables is checked by using p-values and hypothesis tests.  All inferences are conducted using $\alpha = 0.05$ unless stated otherwise. 
 
@@ -189,11 +189,14 @@ levels(data2$score) <- c("6", "7", "8")
 data2$hyperplasia <- data2$hyperplasia + 0.0001
 data2$capsular <- data2$capsular + 0.0001
 
-#The data contains a single value of 450g.  This has been determined 
-#to be an error in the dataset.  Correct the value before analysis
+#The data contains a single value of 450g.  
+#This has been determined 
+#to be an error in the dataset. 
+#Correct the value before analysis
 data2$weight[32] <-44.9
 
-#this function is used to format decimal values stored in a data frame
+#this function is used to format decimal 
+#values stored in a data frame
 #minvalue - smallest value allowed for a decimal format
 #decimal - number of digits to apply to a decimal format
 #exp - number of digits to apply to an exponential format
@@ -222,7 +225,7 @@ Correlation coefficients in Figure \ref{fig:fig.corr} indicate the best relation
 
 The correlation between \textbf{WT}, \textbf{HYP} and \textbf{AGE} are much weaker, indicating these variables do not have a strong linear relationship with \textbf{PSA} and may not be suitable as model covariates 
 
-The summary statistics for the Prostate Cancer data are presented in Table \ref{tab:tab.summary} do not indicate any initial concerns regarding potential outliers or the spread of the data.
+The summary statistics for the Prostate Cancer data presented in Table \ref{tab:tab.summary} do not indicate any initial concerns regarding potential outliers or the spread of the data.
 
 ```{r, fig.corr, include=TRUE, message=FALSE, warning=FALSE, fig.cap="Correlation of available continuous covariates", fig.pos="H", fig.align='center', out.width="0.8\\linewidth"}
 #Plot the correlation values
@@ -236,17 +239,23 @@ ggpairs(data2[c(2:6,8)])
 ```{r tab.summary, message=FALSE, results='asis'}
 #---------create a table of summary statistics
 summ.table <- summ(data2[2:9])$table
-summ.table[1:8] <- c("PSA",
-                     "VOL",
-                     "WT",
-                     "AGE",
-                     "HYP",
-                     "SEM",
-                     "CAP",
-                     "SCORE")
-colnames(summ.table) <- c("Variable","Obs. Count",
-                          "Mean","Median",
-                          "SD","Min.","Max.")
+summ.table[1:8] <- c("PSA",  
+                   "VOL",  
+                   "WT",  
+                   "AGE",  
+                   "HYP",  
+                   "SEM",  
+                   "CAP",  
+                   "SCORE")  
+
+colnames(summ.table) <- c("Variable",  
+                          "Obs. Count",  
+                          "Mean",  
+                          "Median", 
+                          "SD",  
+                          "Min.",  
+                          "Max.")
+
 xtable(summ.table,
        label="tab:tab.summary",
        caption = "Summary of statistics")
@@ -364,7 +373,7 @@ Figure \ref{fig:fig.dist.VOL} through and Figure \ref{fig:fig.dist.AGE} summariz
   \item \textbf{CAP} data clearly contain a group of observations with a value of zero. These values are assumed to be valid observations and not missing values.
   \item \textbf{HYP} data clearly contain a group of observations with a value of zero. These values are assumed to be valid observations and not missing values.
   \item \textbf{WT}  contains observations that should be examined as potential outliers.
-  \item \textbf{AGE} data appear to have a normal distribution and do not show outliers
+  \item \textbf{AGE} data appear to have a normal distribution and do not show outliers.
 \end{itemize}
 
 ```{r fig.dist.VOL, include=TRUE, fig.cap="Distribution of VOL",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
@@ -739,11 +748,11 @@ abline(h = 0,col="forestgreen")
 
 ```
 
-A fitted model for potential covariates allows evaluation of the adjusted $R^{2}$ fit and the p-value for each.  The models \ref{tab.fitted.summary} indicate a weak linear relationship between the dependent variable \textbf{PSA} and the independent variables \textbf{VOL}, \textbf{SCORE}, \textbf{SEM} and \textbf{CAP} based on the adjusted $R^{2}$.  The p-value < 0.05 indicates the null hypothesis; a significant relationship exists between these same variables.  \textbf{HYP}, \textbf{AGE} and \textbf{WT} have a p-value > 0.05; an alternate hypothesis must be accepted.
+A fitted model for potential covariates allows evaluation of the adjusted $R^{2}$ fit and the p-value for each.  The adjusted $R^{2}$ presented in table \ref{tab.fitted.summary} indicates a weak linear relationship between the dependent variable \textbf{PSA} and the independent variables \textbf{VOL}, \textbf{SCORE}, \textbf{SEM} and \textbf{CAP}.  The p-value < 0.05 indicates the null hypothesis; a significant relationship exists between these same variables.  \textbf{HYP}, \textbf{AGE} and \textbf{WT} have a p-value > 0.05; an alternate hypothesis must be accepted.
 
 The fitted regression plot and fitted vs residual plots also indicate potential problems with both the distribution and non-constant variance of the residuals for all of the continuous variables with the exception of \textbf{AGE}. 
 
-The non-constant variance test and Shapiro-Wilks is used to determine if the data violate the assumption of constant variance and normal distribution.  The Shapiro-Wilks p-value is <0.05 for all covariates, indicate the null hypothesis of a normal distribution of residuals most be rejected.  The non-constant variance p-values indicate non-constant variance hypothesis must be rejected for \textbf{VOL} and \textbf{CAP}.
+The non-constant variance test and Shapiro-Wilks is used to determine if the data violate the assumption of constant variance and normal distribution.  The Shapiro-Wilks p-value is <0.05 for all covariates, indicate the null hypothesis of a normal distribution of residuals must be rejected.  The non-constant variance p-values indicate the non-constant variance hypothesis must be rejected for \textbf{VOL} and \textbf{CAP}.
 
 
 ```{r tab.ncv, echo=FALSE, include=TRUE, message=TRUE, results = 'asis'}
@@ -775,7 +784,7 @@ cancerv.normdf <- formatsummary(data.frame(cbind(ncvp.v,swp.v)),
                                 exp=2)
 
 #set some column and row names
-colnames(cancerv.normdf) <- c("Non-Constant Variance","Shapiro-Wilks")
+colnames(cancerv.normdf) <- c("NCV","Shapiro-Wilks")
 rownames(cancerv.normdf) <- c("VOL",
                               "WT",
                               "AGE",
@@ -785,12 +794,12 @@ rownames(cancerv.normdf) <- c("VOL",
 #output the table
 kable(cancerv.normdf,label="tab:tab.ncv",
        table.placement="H",
-       caption = "Shapiro-Wilks and NCV test")
+       caption = "Shapiro-Wilks and Non-Constant Variance (NCV) test")
 ```
 
 \subsection{Transformations}
 
-The regression assumptions require a constant variance and normal distribution of residual errors, which the data does not achieve. A log transformation of dependent variable \textbf{PSA} and the independent variables \textbf{VOL}, \textbf{CAP}, \textbf{HYP}, \textbf{WT} generates an improved distribution of the residuals and non-constant variance for each of these variables.  The improvement is particularly pronounced for \textbf{WT} and \textbf{VOL}
+The regression assumptions require a constant variance and normal distribution of residual errors, which the data does not achieve. A log transformation of the dependent variable \textbf{PSA} and the independent variables \textbf{VOL}, \textbf{CAP}, \textbf{HYP}, and  \textbf{WT} generates an improved distribution of the residuals and non-constant variance for each of these variables.  The improvement is particularly pronounced for \textbf{WT} and \textbf{VOL}
 
 The regression model for the transformed \textbf{VOL} is expressed as $log(PSA)=\beta_{0} + \beta_{1}log(VOL)$ and $log(PSA)=\beta_{0} + \beta_{1}log(WT)$ for \textbf{WT}
 
@@ -823,7 +832,7 @@ abline(lm.weight.log,col="forestgreen")
 
 ```
 
-The goodness-of-fit values as shown in in table \ref{tab.fitted.summary2} indicates the log transformation improved the $Adj.R^{2}$ and the p-values for \textbf{VOL} and \textbf{WT} indicating these variables now have a stronger linear relationship to \textbf{PSA}.  A comparison of the adjusted p-values before the transformation shows \textbf{WT} is not considered significant.  The p-value after the transformation now supports the null hypothesis \textbf{WT} has a significant relationship with \textbf{PSA} 
+The goodness-of-fit values as shown in in table \ref{tab.fitted.summary2} demonstrates the log transformation improved the $Adj.R^{2}$ and the p-values for \textbf{VOL} and \textbf{WT} indicating these variables now have a stronger linear relationship to \textbf{PSA}.  A comparison of the adjusted p-values before the transformation shows \textbf{WT} is not considered significant.  The p-value after the transformation now supports the null hypothesis \textbf{WT} has a significant relationship with \textbf{PSA} 
 
 The Shapiro-Wilks test using the transformed data shown in table \ref{tab.log.ncv} indicates all the null hypotheses of normal distribution of the residuals must be accepted.  The non-constant variance test indicates the null hypothesis should be accepted for all except \textbf{CAP} and \textbf{HYP}  
 
@@ -860,7 +869,7 @@ rownames(summarydf2) <- c("beta1",
 
 #output the dataframe as a comparison table
 xtable(summarydf2,label = "tab.fitted.summary2",
-       caption = "Goodness-of-Fit after Transformation", 
+       caption = "Goodness-of-Fit after Log Transformation", 
        table.placement="H")
 ```
 
@@ -905,7 +914,7 @@ rownames(cancerv.normdf) <- c("VOL",
 xtable(cancerv.normdf,
       label="tab.log.ncv",
        table.placement="H",
-       caption = "Shapiro-Wilks and NCV Test")
+       caption = "Shapiro-Wilks and NCV Test After Log Transformation")
 ```
 
 \section{Covariate Selection}
@@ -1000,9 +1009,11 @@ regsubdf <- data.frame(rowlabels,"RSS" = regsub$rss,
                        "bic"=regsub$bic)
 
 #output the the data frame just created
-xtable(regsubdf, digits = 3
+xt <- xtable(regsubdf, digits = 3
        , label = "tab.covariate.sel"
        ,table.placement="H")
+print(xt, size="\\fontsize{10pt}{12pt}\\selectfont")
+
 
 ```
 
@@ -1095,7 +1106,8 @@ As verification, table \ref{tab.model.comp} compares \textbf{model 2} with the t
 lm.multi.influence <- influence(lm.multi)
 
 #output the most influential HAT values
-largest.hat <- data.frame(head(sort(lm.multi.influence$hat,decreasing=TRUE),6))
+largest.hat <- data.frame(head(sort(lm.multi.influence$hat,
+                                    decreasing=TRUE),6))
 colnames(largest.hat) <- c("Hat Influence")
 xtable(largest.hat, 
       label="tab.largest.hat", 
@@ -1116,7 +1128,8 @@ multi.influence.tab <-influencePlot(lm.multi,
 #---- create a table of the largest
 #cooks distance for the final mode
 # and output as a table
-cooksd <- data.frame(head(sort(cooks.distance(lm.multi),decreasing=TRUE),6))
+cooksd <- data.frame(head(sort(cooks.distance(lm.multi),
+                               decreasing=TRUE),6))
 colnames(largest.hat) <- c("Hat Influence")
 xtable(largest.hat, 
       label="tab.cooksd", 
@@ -1144,7 +1157,8 @@ qqnorm(lm.multi.influence$coef[,4],main="SEM Influence")
 #observations 
 
 #Identify the observations with the largest cooks distance
-largest.cooksd <- head(sort(cooks.distance(lm.multi),decreasing=TRUE),2)
+largest.cooksd <- head(sort(cooks.distance(lm.multi),
+                            decreasing=TRUE),2)
 
 #create a new regression model without the 
 #observations with the largest cooks distsance
@@ -1236,7 +1250,9 @@ The model performance is tested by randomly sampling 85% of the data to create t
   data2.test <- data2[sp==2,]
 
 #create a new model using the training data set
-  lm.multi3 <- lm(data=data2.train, log(psa) ~ log(cancerv) +log(weight) + seminal)
+  lm.multi3 <- lm(data=data2.train, log(psa) ~ log(cancerv) +
+                                                log(weight) + 
+                                                seminal)
   
 #use the test data set to make predictions about the response
   pred <- exp(predict(lm.multi3, data2.test, type='response'))
@@ -1245,14 +1261,16 @@ The model performance is tested by randomly sampling 85% of the data to create t
 #compute the error between predicted and actual
   err <- (pred-actual)/actual
 #output the results in a data frame
-  results <- data.frame(pred, actual,"pct error"=paste("%",round(err*100,1),sep=""))
-  xtable(results, label = "tab.pred.actual", caption="Test the Model - Predicted vs. Actual results")
+  results <- data.frame(pred, actual,
+                        "pct error"=paste("%",round(err*100,1),sep=""))
+  xtable(results, label = "tab.pred.actual", 
+         caption="Test the Model - Predicted vs. Actual results")
   
 ```
 
 \newpage
 
-```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE, size:('small')}
 
 
 #This section only displays the code from the report
