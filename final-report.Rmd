@@ -115,15 +115,15 @@ out_type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
 \pagenumbering{arabic}
 
 \section{Abstract}
-Healthcare providers require accurate markers to understand the disease progression for patients with prostate cancer.  Monitoring the protein Prostate-Specific Antigen (PSA) is accepted as a method the prostate health of men, but its value has fallen over the past three decades.  However, the data collected while studying cancer patients may still be considered a valuable tool for students learning to evaluate clinical data.  The goal of this investigation is to understand the relationship between PSA and 7 other clinical measures. 
+Healthcare providers require accurate markers to understand the disease progression for patients with prostate cancer.  Monitoring the protein prostate-specific antigen (PSA) is an accepted method of tracking the prostate health of men, but its value has fallen over the past three decades.  However, the data collected while studying cancer patients may still be considered a valuable tool for students learning to evaluate clinical data.  The goal of this investigation is to understand the relationship between PSA and 7 other clinical measures. 
 
 \section{Introduction}
 
-Tracking the level of the protein Prostate-specific antigen (PSA) in men diagnosed with prostate cancer is considered an FDA approved method of monitoring the disease (\citet{cit.nat.cancer.inst}). While testing PSA levels is still considered a valuable tool for monitoring, its use as a diagnostic tool is decreasing.  A strong relationship was found between PSA and the clinical stage of prostate cancer (\citet{stamey1989}), but a later study by the same author found this correlation to be slowly decreasing (\citet{stamey2004}) due to changes in the way the disease is treated.  While the 2004 study noted PSA is strongly correlated with the  weight of the prostate, the enlargement may likely be due to benign causes.  The 2004 study concludes a new marker is needed to replace PSA.  While the value of PSA as a prostate cancer indicator is decreasing, the 1989 study has been widely used and is referenced in several other studies until at least 2011 (\citet{netto}), and continues to be a useful tool for teaching data analysis (\citet{love})  The objective of this study is to evaluate data from the 1989 study to look for the association between \textbf{PSA} and 7 clinical measurements in men with advanced prostate cancer.  The measurements inclue \textbf{Estimate of prostate cancer volume}, \textbf{Prostate weight}, \textbf{Age of patient}, \textbf{Amount of benign prostatic hyperplasia}, \textbf{Degree of capsular penetration}, \textbf{Seminal Vesical Invasion}, and the \textbf{Cleason Score}.
+Tracking the level of the protein prostate-specific antigen (PSA) in men diagnosed with prostate cancer is considered an FDA approved method of monitoring the disease (\citet{cit.nat.cancer.inst}). While testing PSA levels is still considered a valuable tool for monitoring, its use as a diagnostic tool is decreasing.  A strong relationship was found between PSA and the clinical stage of prostate cancer (\citet{stamey1989}), but a later study by the same author found this correlation to be slowly decreasing (\citet{stamey2004}) due to changes in the way the disease is treated.  While the 2004 study noted PSA is strongly correlated with the  weight of the prostate, the enlargement may likely be due to benign causes.  The 2004 study concludes a new marker is needed to replace PSA.  While the value of PSA as a prostate cancer indicator is decreasing, the 1989 study has been widely used and is referenced in several other studies until at least 2011 (\citet{netto}), and continues to be a useful tool for teaching data analysis (\citet{love})  The objective of this study is to evaluate data from the 1989 study to look for the association between \textbf{PSA} and 7 clinical measurements in men with advanced prostate cancer.  The measurements include \textbf{estimate of prostate cancer volume}, \textbf{prostate weight}, \textbf{age of patient}, \textbf{amount of benign prostatic hyperplasia}, \textbf{degree of capsular penetration}, \textbf{seminal vesical Invasion}, and the \textbf{Gleason Score}.
 
 \section{Materials and Methods}
 
-The dataset for this analysis was originally published by \citet{stamey1989} and then adapted by the textbook \emph{"Elements of Statistical Learning"} \citet{hastie}.  This text from Springer is credited in the \href{https://courseware.ku.edu/bbcswebdav/pid-9064398-dt-content-rid-52612040_1/courses/4212-58856/Class_Project%282%29.pdf}{stat823 course} project materials as the source of the adapated data.  A summary of the dependent and independent variables available is presented in Table \ref{table:model.variables}
+The dataset for this analysis was originally published by \citet{stamey1989} and then adapted by the textbook \emph{"Elements of Statistical Learning"} \citet{hastie}.  This text from Springer is credited in the \href{https://courseware.ku.edu/bbcswebdav/pid-9064398-dt-content-rid-52612040_1/courses/4212-58856/Class_Project%282%29.pdf}{stat823 course} project materials as the source of the adapted data.  A summary of the dependent and independent variables available is presented in Table \ref{table:model.variables}
 
 Stat823 is not the first class to make use of this data.  \href{https://thomaselove.github.io/432-notes/a-study-of-prostate-cancer.html}{Thomas Love}, a previous statistical course author noted an error in one of the weight measurements.  The author noted the measurement of 450 grams should be 44.9 grams. This study has made the same correction for all analysis.
 
@@ -161,11 +161,11 @@ Selection of the final model makes use of the automatic covariate selection proc
 
 \subsubsection{Model Assumptions}
 
-To support linear regression and inference, several key assumptions must be verified (\citep{wiley}).  First, a linear relationship must exist between the independent and dependent variables. Also, the errors are assumed to be normally distributed and the residuals of the dependent variable are assumed to be evenly distributed (constant variance) across the range of possible independent (x axis) values.  Because the model will use multiple covariates, the model assumes the data is not influenced by multicollinearity.  
+To support linear regression and inference, several key assumptions must be verified (\citep{wiley}).  First, a linear relationship must exist between the independent and dependent variables. Also, the errors are assumed to be normally distributed and the residuals of the dependent variable are assumed to be evenly distributed (constant variance) across the range of possible independent (x axis) values.  Because the model will use multiple covariates, the model assumes the data are not influenced by multicollinearity.  
 
-If the data does not support the assumptions, a non-linear transformation of one or more variables may be used \citep{wiley}.  The use of a common transformation such as a natural logarithm requires any observations with a value of zero to be first modified using a linear transformation.  Given the values of zero for \textbf{CAP} and \textbf{HYP}, a value of 0.0001 has been added to each of these two variables for all observations.  No other variables required a linear transformation prior to the log transformation.  
+If the data do not support the assumptions, a non-linear transformation of one or more variables may be used \citep{wiley}.  The use of a common transformation such as a natural logarithm requires any observations with a value of zero to be first modified using a linear transformation.  Given the values of zero for \textbf{CAP} and \textbf{HYP}, a value of 0.0001 has been added to each of these two variables for all observations.  No other variables required a linear transformation prior to the log transformation.  
 
-The final model is tested to verify the assumptions required for linear regression.  The r ncvtest from the \href{https://www.rdocumentation.org/packages/car/versions/3.0-10/topics/ncvTest}{car} package to verify constant variance and  the Shapiro-Wilks test from \href{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/shapiro.test.html}{stats package} to verify a normal distribution of the residuals. The non-constant variance assumption will be tested using the \href{https://cran.r-project.org/web/packages/car/index.html}{car} package
+The final model is tested to verify the assumptions required for linear regression.  The R ncvtest function from the \href{https://www.rdocumentation.org/packages/car/versions/3.0-10/topics/ncvTest}{car} package is used to verify constant variance and  the Shapiro-Wilk's test from \href{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/shapiro.test.html}{stats package} to verify a normal distribution of the residuals.
 
 \subsubsection{Primary Objective Analysis}
 
@@ -215,9 +215,8 @@ formatsummary <- function(df,minvalue, decimal, exp){
 
 #attach(data2)
 ```
-\section{Results}
 
-Describe your results here. Add subheadings if necessary.
+
 
 \section{Analysis of Available Covariates}
 
@@ -752,7 +751,7 @@ A fitted model for potential covariates allows evaluation of the adjusted $R^{2}
 
 The fitted regression plot and fitted vs residual plots also indicate potential problems with both the distribution and non-constant variance of the residuals for all of the continuous variables with the exception of \textbf{AGE}. 
 
-The non-constant variance test and Shapiro-Wilks is used to determine if the data violate the assumption of constant variance and normal distribution.  The Shapiro-Wilks p-value is <0.05 for all covariates, indicate the null hypothesis of a normal distribution of residuals must be rejected.  The non-constant variance p-values indicate the non-constant variance hypothesis must be rejected for \textbf{VOL} and \textbf{CAP}.
+The non-constant variance test and Shapiro-Wilk's is used to determine if the data violate the assumption of constant variance and normal distribution.  The Shapiro-Wilk's p-value is <0.05 for all covariates, indicate the null hypothesis of a normal distribution of residuals must be rejected.  The non-constant variance p-values indicate the non-constant variance hypothesis must be rejected for \textbf{VOL} and \textbf{CAP}.
 
 
 ```{r tab.ncv, echo=FALSE, include=TRUE, message=TRUE, results = 'asis'}
@@ -784,7 +783,7 @@ cancerv.normdf <- formatsummary(data.frame(cbind(ncvp.v,swp.v)),
                                 exp=2)
 
 #set some column and row names
-colnames(cancerv.normdf) <- c("NCV","Shapiro-Wilks")
+colnames(cancerv.normdf) <- c("NCV","Shapiro-Wilk's")
 rownames(cancerv.normdf) <- c("VOL",
                               "WT",
                               "AGE",
@@ -794,12 +793,12 @@ rownames(cancerv.normdf) <- c("VOL",
 #output the table
 kable(cancerv.normdf,label="tab:tab.ncv",
        table.placement="H",
-       caption = "Shapiro-Wilks and Non-Constant Variance (NCV) test")
+       caption = "Shapiro-Wilk's and Non-Constant Variance (NCV) test")
 ```
 
 \subsection{Transformations}
 
-The regression assumptions require a constant variance and normal distribution of residual errors, which the data does not achieve. A log transformation of the dependent variable \textbf{PSA} and the independent variables \textbf{VOL}, \textbf{CAP}, \textbf{HYP}, and  \textbf{WT} generates an improved distribution of the residuals and non-constant variance for each of these variables.  The improvement is particularly pronounced for \textbf{WT} and \textbf{VOL}
+The regression assumptions require a constant variance and normal distribution of residual errors, which the data do not achieve. A log transformation of the dependent variable \textbf{PSA} and the independent variables \textbf{VOL}, \textbf{CAP}, \textbf{HYP}, and  \textbf{WT} generates an improved distribution of the residuals and non-constant variance for each of these variables.  The improvement is particularly pronounced for \textbf{WT} and \textbf{VOL}
 
 The regression model for the transformed \textbf{VOL} is expressed as $log(PSA)=\beta_{0} + \beta_{1}log(VOL)$ and $log(PSA)=\beta_{0} + \beta_{1}log(WT)$ for \textbf{WT}
 
@@ -834,7 +833,7 @@ abline(lm.weight.log,col="forestgreen")
 
 The goodness-of-fit values as shown in in table \ref{tab.fitted.summary2} demonstrates the log transformation improved the $Adj.R^{2}$ and the p-values for \textbf{VOL} and \textbf{WT} indicating these variables now have a stronger linear relationship to \textbf{PSA}.  A comparison of the adjusted p-values before the transformation shows \textbf{WT} is not considered significant.  The p-value after the transformation now supports the null hypothesis \textbf{WT} has a significant relationship with \textbf{PSA} 
 
-The Shapiro-Wilks test using the transformed data shown in table \ref{tab.log.ncv} indicates all the null hypotheses of normal distribution of the residuals must be accepted.  The non-constant variance test indicates the null hypothesis should be accepted for all except \textbf{CAP} and \textbf{HYP}  
+The Shapiro-Wilk's test using the transformed data shown in table \ref{tab.log.ncv} indicates all the null hypotheses of normal distribution of the residuals must be accepted.  The non-constant variance test indicates the null hypothesis should be accepted for all except \textbf{CAP} and \textbf{HYP}  
 
 ```{r tab.fitted.summary2, warning=FALSE, include=TRUE, message=TRUE, results = 'asis'}
 #----- create a table of the regression summaries
@@ -903,7 +902,7 @@ cancerv.normdf <- formatsummary(data.frame(cbind(ncvp.v,swp.v)),
                                 exp=2)
 
 #set some column and row names
-colnames(cancerv.normdf) <- c("Non-Constant Variance","Shapiro-Wilks")
+colnames(cancerv.normdf) <- c("Non-Constant Variance","Shapiro-Wilk's")
 rownames(cancerv.normdf) <- c("VOL",
                               "WT",
                               "AGE",
@@ -914,7 +913,7 @@ rownames(cancerv.normdf) <- c("VOL",
 xtable(cancerv.normdf,
       label="tab.log.ncv",
        table.placement="H",
-       caption = "Shapiro-Wilks and NCV Test After Log Transformation")
+       caption = "Shapiro-Wilk's and NCV Test After Log Transformation")
 ```
 
 \section{Covariate Selection}
@@ -1046,6 +1045,8 @@ Final model selection is aided by the regsubsets function available in the leaps
   \item \textbf{$SEM_{presence}$}
 \end{itemize}
 
+\newpage
+
 \section{Final Model}
 
 \subsection{Summary Statistics and Goodness-of-Fit}
@@ -1092,6 +1093,8 @@ xtable(multi.summary.df,
        caption="Model Summary Statistics",
        label = "tab.summ.stat")
 ```
+
+\newpage
 
 \subsection{Influence}
 
@@ -1195,7 +1198,7 @@ xtable(lm.comparedf,
  
 \subsection{Verification of Model Assumptions}
 
-The residuals vs. fitted values plot indicates the residuals for the regression model are normally distributed and the variance is constant across the x-axis.  The observations are verified using the shapiro-wilks test and the non-constant variance test.  The output from the Shapiro-Wilks test indicates the null hypothesis of a normal distribution of the residuals must be accepted.  Similarly, table \ref{tab.ncv.test} indicates the null hypothesis of constant variance must also be accepted.  The Variance Inflation Factor in table \ref{tab.vif} also indicates all values are less 5 and the model does not exhibhit problems with collinearity  
+The residuals vs. fitted values plot indicates the residuals for the regression model are normally distributed and the variance is constant across the x-axis.  The observations are verified using the Shapiro-Wilk's test and the non-constant variance test.  The output from the Shapiro-Wilk's test indicates the null hypothesis of a normal distribution of the residuals must be accepted.  Similarly, table \ref{tab.ncv.test} indicates the null hypothesis of constant variance must also be accepted.  The Variance Inflation Factor in table \ref{tab.vif} also indicates all values are less 5 and the model does not exhibit problems with multicollinearity  
 
 
 ```{r fig.resid, include=TRUE, fig.cap="fitted vs residuals", fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
@@ -1205,7 +1208,7 @@ plot(fitted(lm.multi),residuals(lm.multi),
 abline(h = 0)
 ```
 
-```{r fig.shapiro, include=TRUE, fig.cap="shapiro-wilks test of residuals",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
+```{r fig.shapiro, include=TRUE, fig.cap="Shapiro-Wilk's Test of Residuals",fig.pos="H", fig.align='center', out.width="0.6\\linewidth"}
 #plot the shapio-wilks p-value and qqnorm plot
 shapiro.qqnorm(residuals(lm.multi), cex = 2)
 ```
@@ -1267,7 +1270,21 @@ The model performance is tested by randomly sampling 85% of the data to create t
          caption="Test the Model - Predicted vs. Actual results")
   
 ```
+RESULTS:
 
+In the primary analysis, the significant clinical measurements that has linear relationship with the PSA was found out. Initially, the correlation coefficients between the PSA and other continuous model covariates were studied. Only CAP and VOL showed significant relationship with PSA. Further the data distribution for the continuous variables were analyzed using   distribution plots and summary statistics. AGE had normal distribution and VOL had skewed distribution. WT and VOL were found to have potential outliers. In the initial analysis of non-constant variance and the normality assumption, only AGE, WT and HYP satisfied homoscedasticity and none of the continuous variables satisfied the normality assumption.
+
+The log transformations performed on both the dependent variable PSA and other independent variables such as VOL and WT resulted in a significant improvement in distribution and non-constant variance along with a stronger linear relationship with PSA which was evident from the goodness-of-fit test.
+
+Using regsubsets function, the model with 5 variables VOL, SEM, SCORE (8), WT and HYP had the lowest BIC, $C_p$ and highest $R^2$. But since HYP had issues, we considered model without HYP. As there was no significant improvement in $R^2$ and BIC values between three and four covariate models, the three-covariate model VOL, SEM, WT was selected with slight tuning considering only seminal presence true values.
+
+CONCLUSIONS AND DISCUSSIONS:
+
+From the summary and goodness of fit tables of the final model, all the chosen final parameters log (VOL), log (WT) and $SEM_{presence}$ of the multiple linear regression showed significant relationship with log(PSA) with p-values less than 0.05. The final model has a variability of 62.34387%.
+
+The response formula for the final model was $log(PSA) = \beta_0 + \beta_1log(V OL) + \beta_2log(weight) + \beta_3SEM_{presence}$, where $\beta_0 = -0.77074, \beta_1 = 0.52512, \beta_2  = 0.66037 and \beta_3 = 0.66596$.  The final model was tested for all the assumptions – influential points, normality, non-constant variance, outliers and variance inflation factor. There were six influential points, but the influence was not significant. However, it was found that removing two most influential points from the model has insignificant effect on adjusted $R^2$ and slopes. The final model also satisfied the normality assumption($p-value=0.9873$) and homoscedasticity assumption($p-value=0.63$). Also, all the variance inflation factors were less than 5. 13 outliers were found for the final model.
+
+The final model designed with three covariates is the best multiple regression model for the given data that satisfies all the assumptions.Our study shows that cancer volume, weight and seminal presence can predict the prostate specific antigen with appropriate log transformation for VOL, WT and PSA. The chosen model was able to explain 62% of variation in the prostate specific antigen in the prostate cancer patients.
 \newpage
 
 ```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE, size:('small')}
